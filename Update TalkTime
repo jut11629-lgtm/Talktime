@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TalkTime</title>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial;background:#edf2f7;color:#182230}
+header{background:#075e54;color:white;padding:15px;display:flex;justify-content:space-between;align-items:center}
+header h2{margin:0}
+button{border:0;border-radius:7px;padding:10px 14px;background:#087e70;color:white;font-weight:bold;cursor:pointer}
+input,textarea,select{width:100%;padding:12px;border:1px solid #ccd5df;border-radius:8px;margin:6px 0;font-size:15px}
+#auth{max-width:420px;margin:45px auto;padding:22px;background:white;border-radius:12px;box-shadow:0 3px 15px #0001}
+#app{display:none;max-width:1100px;margin:15px auto;padding:0 10px}
+.layout{display:grid;grid-template-columns:220px 1fr 210px;gap:12px}
+.panel{background:white;border-radius:10px;padding:13px;box-shadow:0 2px 8px #0001}
+.room{display:block;width:100%;text-align:left;margin:5px 0;background:#edf5f3;color:#164d45}
+.room.active{background:#087e70;color:white}
+#messages{height:55vh;min-height:300px;overflow-y:auto;padding:12px;background:#f8fafc;border-radius:8px}
+.msg{padding:9px 11px;margin:8px 0;background:white;border-radius:9px;border:1px solid #e5eaf0;overflow-wrap:anywhere}
+.msg b{color:#087e70}
+.msg small{color:#87919c;float:right}
+.sendrow{display:flex;gap:7px;margin-top:8px}
+.sendrow input{margin:0}
+.sendrow button{white-space:nowrap}
+#members{max-height:55vh;overflow:auto}
+.member{padding:8px;border-bottom:1px solid #eee;overflow-wrap:anywhere}
+.muted{color:#78838f;font-size:13px}
+.hidden{display:none}
+h3{margin-top:4px}
+@media(max-width:750px){
+ .layout{grid-template-columns:1fr}
+ #messages{height:48vh}
+ #members{max-height:180px}
+}
+</style>
+</head>
+
+<body>
+
+<header>
+  <h2>💬 TalkTime</h2>
+  <button id="logoutBtn" class="hidden" onclick="logout()">Logout</button>
+</header>
+
+<div id="auth">
+  <h2>Welcome to TalkTime</h2>
+  <p class="muted">Create your account or login to chat.</p>
+  <input id="username" placeholder="Your username (signup only)" maxlength="20">
+  <input id="email" type="email" placeholder="Email address">
+  <input id="password" type="password" placeholder="Password">
+  <button style="width:100%;margin-top:8px" onclick="signup()">Create Account</button>
+  <button style="width:100%;margin-top:8px;background:#2457d6" onclick="login()">Login</button>
+  <p id="authMsg" class="muted"></p>
+</div>
+
+<div id="app">
+  <div class="layout">
+
+    <aside class="panel">
+      <h3>🌍 Chat Rooms</h3>
+      <button class="room active" data-room="main" onclick="openRoom('main',this)">🌐 Main Lobby</button>
+      <button class="room" data-room="lahore" onclick="openRoom('lahore',this)">📍 Lahore</button>
+      <button class="room" data-room="karachi" onclick="openRoom('karachi',this)">📍 Karachi</button>
+      <button class="room" data-room="islamabad" onclick="openRoom('islamabad',this)">📍 Islamabad</button>
+      <button class="room" data-room="multan" onclick="openRoom('multan',this)">📍 Multan</button>
+      <button class="room" data-room="peshawar" onclick="openRoom('peshawar',this)">📍 Peshawar</button>
+      <button class="room" data-room="quetta" onclick="openRoom('quetta',this)">📍 Quetta</button>
+
+      <hr>
+      <h3>👤 My Profile</h3>
+      <div id="myName"></div>
+      <textarea id="bio" maxlength="160" rows="3" placeholder="Write a short bio..."></textarea>
+      <button onclick="saveBio()">Save Bio</button>
+      <p class="muted">Maximum 160 characters.</p>
+    </aside>
+
+    <main class="panel">
+      <h3 id="roomTitle">🌐 Main Lobby</h3>
+      <div id="messages"></div>
+
+      <div style="margin-top:10px">
+        <button onclick="addEmoji('😊')">😊</button>
+        <button onclick="addEmoji('❤️')">❤️</button>
+        <button onclick="addEmoji('😂')">😂</button>
+        <button onclick="addEmoji('😍')">😍</button>
+        <button onclick="addEmoji('👍')">👍</button>
+        <button onclick="addEmoji('🔥')">🔥</button>
+      </div>
+
+      <div class="sendrow">
+        <input id="messageInput" maxlength="1000" placeholder="Write a message..." onkeydown="if(event.key==='Enter')sendMessage()">
+        <button onclick="sendMessage()">Send</button>
+      </div>
+      <p class="muted">Please be respectful. Do not share private information.</p>
+    </main>
+
+    <aside class="panel">
+      <h3>👥 Members</h3>
+      <div id="members">Loading members...</div>
+    </aside>
+
+  </div>
+</div>
+
+<script>
+const firebaseConfig = {
+  apiKey: "AIzaSyDNrlP_auYAjDU6C43THl3cOvVqmQR1kYM",
+  authDomain: "talktime-70e88.firebaseapp.com",
+  projectId: "talktime-70e88",
+  storageBucket: "talktime-70e88.firebasestorage.app",
+  messagingSenderId: "356630061165",
+  appId: "1:356630061165:web:156f9afef56c58d1881f64",
+  measurementId: "G-VS2EHB4KM7"
+};
+
+firebase.initializeApp(firebaseConfig);
+
+const auth = firebase.auth();
+const db = firebase.firestore();
+
+let currentUser = null;
+let currentRoom = "main";
+let messageListener = null;
+let memberListener = null;
+let myUsername = "";
+
+const roomNames = {
+  main:"🌐 Main Lobby",
+  lahore:"📍 Lahore",
+  karachi:"📍 Karachi",
+  islamabad:"📍 Islamabad",
+  multan:"📍 Multan",
+  peshawar:"📍 Peshawar",
+  quetta:"📍 Quetta"
+};
+
+function showAuthMessage(message){
+  document.getElementById("authMsg").textContent = message;
+}
+
+async function signup(){
+  const username = document.getElementById("username").value.trim();
+  const email = document.getElementById("email").value.trim();
+  const password = document.getElementById("password").value;
+
+  if(username.length < 3 || username.length > 20){
+    showAuthMessage("Username 3 se 20 characters ka hona chahiye.");
+    return;
+  }
+
+  if(!email || password.length < 6){
+    showAuthMessage("Email likhein aur password kam az kam 6 characters ka rakhein.");
+    return;
+  }
+
+  try{
+    const result = await auth.createUserWithEmailAndPassword(email,password);
+
+    await db.collection("users").doc(result.user.uid).set({
+      username: username,
+      bio: "",
+      createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+
+  }catch(error){
+    showAuthMessage(error.message);
+  }
+}
+
+async function login(){
+  const email = document.getElementById("email").value.trim();
+  const password = document.getElementById("password").value;
+
+  try{
+    await auth.signInWithEmailAndPassword(email,password);
+  }catch(error){
+    showAuthMessage(error.message);
+  }
+}
+
+function logout(){
+  auth.signOut();
+}
+
+auth.onAuthStateChanged(async user=>{
+  if(user){
+    currentUser = user;
+    document.getElementById("auth").style.display = "none";
+    document.getElementById("app").style.display = "block";
+    document.getElementById("logoutBtn").classList.remove("hidden");
+
+    try{
+      const profile = await db.collection("users").doc(user.uid).get();
+
+      if(!profile.exists){
+        alert("Profile nahi mila. Account dobara create karein ya admin se rabta karein.");
+        await auth.signOut();
+        return;
+      }
+
+      myUsername = profile.data().username;
+      document.getElementById("myName").textContent = myUsername;
+      document.getElementById("bio").value = profile.data().bio || "";
+
+      startMembers();
+      openRoom("main",document.querySelector('[data-room="main"]'));
+
+    }catch(error){
+      alert("Profile load nahi hua: " + error.message);
+    }
+
+  }else{
+    currentUser = null;
+    document.getElementById("auth").style.display = "block";
+    document.getElementById("app").style.display = "none";
+    document.getElementById("logoutBtn").classList.add("hidden");
+
+    if(messageListener) messageListener();
+    if(memberListener) memberListener();
+  }
+});
+
+function openRoom(room,button){
+  currentRoom = room;
+  document.getElementById("roomTitle").textContent = roomNames[room];
+  document.querySelectorAll(".room").forEach(b=>b.classList.remove("active"));
+  if(button) button.classList.add("active");
+
+  if(messageListener) messageListener();
+
+  document.getElementById("messages").innerHTML = "Loading messages...";
+
+  messageListener = db.collection("rooms")
+    .doc(room)
+    .collection("messages")
+    .orderBy("createdAt","asc")
+    .limit(100)
+    .onSnapshot(snapshot=>{
+      const box = document.getElementById("messages");
+      box.innerHTML = "";
+
+      snapshot.forEach(doc=>{
+        const data = doc.data();
+        const message = document.createElement("div");
+        message.className = "msg";
+
+        const name = document.createElement("b");
+        name.textContent = data.username || "Member";
+
+        const time = document.createElement("small");
+        time.textContent = data.createdAt && data.createdAt.toDate
+          ? data.createdAt.toDate().toLocaleTimeString([], {hour:"2-digit",minute:"2-digit"})
+          : "Now";
+
+        const content = document.createElement("div");
+        content.textContent = data.text || "";
+
+        message.append(name,time,content);
+        box.appendChild(message);
+      });
+
+      box.scrollTop = box.scrollHeight;
+
+    },error=>{
+      document.getElementById("messages").textContent =
+        "Messages load nahi huay: " + error.message;
+    });
+}
+
+async function sendMessage(){
+  const input = document.getElementById("messageInput");
+  const text = input.value.trim();
+
+  if(!text || !currentUser) return;
+
+  if(text.length > 1000){
+    alert("Message 1000 characters se chhota rakhein.");
+    return;
+  }
+
+  const urlPattern = /https?:\/\/|www\./i;
+  const youtubePattern = /^(https?:\/\/)?(www\.)?(youtube\.com|youtu\.be)\//i;
+
+  if(urlPattern.test(text) && !youtubePattern.test(text)){
+    alert("TalkTime par external links allowed nahi hain. Sirf YouTube link share kar sakte hain.");
+    return;
+  }
+
+  input.value = "";
+
+  try{
+    await db.collection("rooms")
+      .doc(currentRoom)
+      .collection("messages")
+      .add({
+        uid: currentUser.uid,
+        username: myUsername,
+        text: text,
+        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+      });
+  }catch(error){
+    input.value = text;
+    alert("Message send nahi hua: " + error.message);
+  }
+}
+
+function addEmoji(emoji){
+  const input = document.getElementById("messageInput");
+  input.value += emoji;
+  input.focus();
+}
+
+async function saveBio(){
+  const bio = document.getElementById("bio").value.trim();
+
+  if(bio.length > 160){
+    alert("Bio 160 characters se chhoti rakhein.");
+    return;
+  }
+
+  try{
+    await db.collection("users").doc(currentUser.uid).update({bio:bio});
+    alert("Bio save ho gayi!");
+  }catch(error){
+    alert("Bio save nahi hui: " + error.message);
+  }
+}
+
+function startMembers(){
+  if(memberListener) memberListener();
+
+  memberListener = db.collection("users")
+    .orderBy("createdAt","asc")
+    .limit(100)
+    .onSnapshot(snapshot=>{
+      const box = document.getElementById("members");
+      box.innerHTML = "";
+
+      snapshot.forEach(doc=>{
+        const data = doc.data();
+        const item = document.createElement("div");
+        item.className = "member";
+
+        const name = document.createElement("b");
+        name.textContent = "👤 " + (data.username || "Member");
+
+        const bio = document.createElement("div");
+        bio.className = "muted";
+        bio.textContent = data.bio || "TalkTime member";
+
+        item.append(name,bio);
+        box.appendChild(item);
+      });
+    },error=>{
+      document.getElementById("members").textContent =
+        "Members load nahi huay: " + error.message;
+    });
+}
+</script>
+
+</body>
+</html>
