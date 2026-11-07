@@ -3,436 +3,496 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width,initial-scale=1">
 <title>TalkTime</title>
 <style>
 *{box-sizing:border-box}
-body{margin:0;font-family:Arial,sans-serif;background:#f2f5f9;color:#182230}
-header{background:#2457d6;color:white;padding:16px;text-align:center;font-size:24px;font-weight:bold}
-main{max-width:760px;margin:18px auto;padding:14px}
-.card{background:white;border-radius:14px;padding:16px;margin-bottom:14px;box-shadow:0 2px 12px #0000000d}
-input,button,select{width:100%;padding:12px;margin:6px 0;border:1px solid #ccd3df;border-radius:9px;font-size:16px}
-button{background:#2457d6;color:white;border:0;font-weight:bold}
-button.secondary{background:#e8edfb;color:#1b3f9d}
-#app{display:none}
-#ownerPanel{display:none}
-.muted{color:#657187;font-size:13px}
-.row{display:flex;gap:8px}
-.row button{width:auto;flex:1}
-#messages{height:280px;overflow:auto;border:1px solid #e1e5ed;border-radius:10px;padding:10px}
-.msg{padding:8px;margin:6px 0;background:#f1f4fa;border-radius:8px;overflow-wrap:anywhere}
-small{color:#657187}
-h2{margin-top:0;font-size:19px}
-.member-controls{border-top:1px solid #ddd;margin-top:8px;padding-top:8px}
+body{margin:0;background:#101629;color:#fff;font-family:Arial}
+header{background:#202e50;padding:16px;display:flex;justify-content:space-between;align-items:center}
+h2,h3{margin-top:5px}
+main{max-width:900px;margin:auto;padding:12px}
+.card{background:#1b2640;padding:14px;border-radius:14px;margin:12px 0}
+input,textarea,select{width:100%;padding:12px;margin:6px 0;border:1px solid #405071;border-radius:9px;background:#101a30;color:white}
+button{background:#637fff;color:white;border:0;padding:11px 14px;border-radius:9px;margin:3px;cursor:pointer}
+button.secondary{background:#354564}
+button.danger{background:#a83248}
+.tabs{display:flex;overflow:auto;gap:5px;margin:10px 0}
+.tabs button{white-space:nowrap}
+.page{display:none}
+.page.active{display:block}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:7px}
+.stat{background:#101a30;padding:12px;text-align:center;border-radius:10px}
+.stat b{display:block;font-size:19px;margin-top:5px}
+.message,.item{background:#101a30;padding:11px;border-radius:10px;margin:8px 0;overflow-wrap:anywhere}
+.meta{font-size:12px;color:#aab8d6;margin-bottom:5px}
+#chatMessages{height:42vh;overflow:auto}
+.small{font-size:12px;color:#aab8d6}
+.hidden{display:none!important}
+.gifts{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+.gift{text-align:center;background:#101a30;padding:12px;border-radius:12px}
+.gift span{font-size:30px}
+iframe,video,img{max-width:100%;border-radius:10px}
+@media(max-width:500px){.stats{grid-template-columns:repeat(2,1fr)}}
 </style>
 </head>
 <body>
-<header>💬 TalkTime</header>
-<main>
+<header>
+ <b style="font-size:23px">TalkTime 💬</b>
+ <span id="userLabel" class="small">Not logged in</span>
+</header>
 
-<section id="auth" class="card">
-<h2>Welcome to TalkTime</h2>
-<p class="muted">Login or create your account to start chatting.</p>
-<input id="email" type="email" placeholder="Email address">
-<input id="password" type="password" placeholder="Password">
-<div class="row">
-<button id="signup">Create account</button>
-<button id="login" class="secondary">Login</button>
-</div>
-<p id="authStatus" class="muted"></p>
+<section id="loginBox" class="card" style="max-width:430px;margin:35px auto">
+ <h2>Welcome to TalkTime</h2>
+ <input id="email" type="email" placeholder="Email">
+ <input id="password" type="password" placeholder="Password">
+ <button onclick="signup()">Create Account</button>
+ <button onclick="login()" class="secondary">Login</button>
+ <p id="loginStatus" class="small"></p>
 </section>
 
-<section id="app">
+<main id="app" class="hidden">
+ <section class="card">
+  <div style="display:flex;justify-content:space-between;align-items:center">
+   <div><h2 id="myName">My Profile</h2><span id="myRank" class="small"></span></div>
+   <button class="secondary" onclick="logout()">Logout</button>
+  </div>
+  <div class="stats">
+   <div class="stat">⭐ Level<b id="level">1</b></div>
+   <div class="stat">✨ XP<b id="xp">0</b></div>
+   <div class="stat">🪙 Coins<b id="coins">0</b></div>
+   <div class="stat">💎 Rubies<b id="rubies">0</b></div>
+  </div>
+ </section>
 
-<div class="card">
-<div class="row">
-<div style="flex:1">
-<b id="myName">Member</b>
-<div class="muted" id="myRank">Rank: Member</div>
-</div>
-<button id="logout" class="secondary">Logout</button>
-</div>
-</div>
+ <div class="tabs">
+  <button onclick="showPage('chat')">Chat</button>
+  <button onclick="showPage('private')">Private</button>
+  <button onclick="showPage('wall')">Friends Wall</button>
+  <button onclick="showPage('news')">News</button>
+  <button onclick="showPage('members')">Members</button>
+  <button onclick="showPage('games')">Games</button>
+  <button onclick="showPage('gifts')">Gifts</button>
+  <button id="ownerButton" class="hidden" onclick="showPage('owner')">Owner</button>
+ </div>
 
-<div id="ownerPanel" class="card">
-<h2>👑 Owner Panel</h2>
-<p class="muted">Manage member ranks from here.</p>
-<div id="ownerMembers">Loading members...</div>
-<p id="ownerStatus" class="muted"></p>
-</div>
+ <section id="chat" class="page active">
+  <div class="card">
+   <h3>🌍 Public Chat</h3>
+   <div id="chatMessages"></div>
+   <textarea id="chatText" maxlength="1000" placeholder="Write a message"></textarea>
+   <button onclick="sendChat()">Send</button>
+   <button class="secondary" onclick="toggleStickers()">Stickers</button>
+   <div id="stickerBox" class="hidden">
+    <button onclick="sendSticker('😀')">😀</button>
+    <button onclick="sendSticker('😂')">😂</button>
+    <button onclick="sendSticker('❤️')">❤️</button>
+    <button onclick="sendSticker('🔥')">🔥</button>
+    <button onclick="sendSticker('🌹')">🌹</button>
+    <button onclick="sendSticker('🎉')">🎉</button>
+   </div>
+   <hr>
+   <button class="secondary" onclick="shareYoutube()">YouTube Video</button>
+   <button class="secondary" onclick="document.getElementById('upload').click()">Gallery Upload</button>
+   <input id="upload" type="file" accept="image/*,video/*,audio/*" class="hidden" onchange="uploadMedia(event)">
+   <p class="small">Normal external links are not allowed. YouTube videos can be shared through the YouTube button.</p>
+  </div>
+ </section>
 
-<div class="card">
-<h2>Public Chat</h2>
-<div id="messages"></div>
-<input id="messageText" maxlength="1000" placeholder="Write a message...">
-<button id="send">Send message</button>
-<p id="chatStatus" class="muted"></p>
-</div>
+ <section id="private" class="page">
+  <div class="card">
+   <h3>🔒 Private Chat</h3>
+   <input id="friendEmail" placeholder="Friend's email">
+   <button onclick="openPrivate()">Open Chat</button>
+   <div id="privateMessages"></div>
+   <textarea id="privateText" placeholder="Private message"></textarea>
+   <button onclick="sendPrivate()">Send</button>
+  </div>
+ </section>
 
-<div class="card">
-<h2>Members</h2>
-<div id="members" class="muted">Loading members...</div>
-</div>
+ <section id="wall" class="page">
+  <div class="card">
+   <h3>🧱 Friends Wall</h3>
+   <textarea id="wallText" placeholder="Write a post"></textarea>
+   <button onclick="postWall()">Publish</button>
+   <div id="wallList"></div>
+  </div>
+ </section>
 
-<div class="card">
-<h2>Private message</h2>
-<input id="memberUid" placeholder="Enter member UID">
-<input id="privateText" maxlength="1000" placeholder="Write a private message...">
-<button id="privateSend">Send private message</button>
-<p id="privateStatus" class="muted">Ask the other member for their UID.</p>
-<div id="privateMessages"></div>
-</div>
+ <section id="news" class="page">
+  <div class="card">
+   <h3>📰 News</h3>
+   <div id="newsEditor" class="hidden">
+    <input id="newsTitle" placeholder="News title">
+    <textarea id="newsBody" placeholder="News details"></textarea>
+    <button onclick="publishNews()">Publish News</button>
+   </div>
+   <div id="newsList"></div>
+  </div>
+ </section>
 
-</section>
+ <section id="members" class="page">
+  <div class="card"><h3>👥 Members</h3><div id="memberList"></div></div>
+ </section>
+
+ <section id="games" class="page">
+  <div class="card">
+   <h3>🎲 Roll the Dice</h3>
+   <div id="dice" style="font-size:65px;text-align:center">🎲</div>
+   <p id="diceResult" style="text-align:center">Ready to play?</p>
+   <button style="width:100%" onclick="rollDice()">Roll Dice</button>
+   <p class="small">Coin rewards will activate after secure server-side reward setup.</p>
+  </div>
+ </section>
+
+ <section id="gifts" class="page">
+  <div class="card">
+   <h3>🎁 Gift Shop</h3>
+   <input id="giftEmail" placeholder="Receiver's email">
+   <div class="gifts" id="giftList"></div>
+   <p id="giftStatus" class="small"></p>
+  </div>
+ </section>
+
+ <section id="owner" class="page">
+  <div class="card">
+   <h3>👑 Owner Panel</h3>
+   <input id="manageEmail" placeholder="Member email">
+   <select id="newRank">
+    <option>Member</option><option>VIP</option>
+    <option>Super VIP</option><option>Moderator</option>
+    <option>Admin</option><option>Super Admin</option>
+   </select>
+   <button onclick="changeRank()">Change Rank</button>
+   <p id="ownerStatus" class="small"></p>
+  </div>
+ </section>
 </main>
 
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
 
-import {
-getAuth,
-createUserWithEmailAndPassword,
-signInWithEmailAndPassword,
-onAuthStateChanged,
-signOut
-} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
-
-import {
-getFirestore,
-collection,
-doc,
-setDoc,
-getDoc,
-addDoc,
-updateDoc,
-query,
-orderBy,
-limit,
-onSnapshot,
-serverTimestamp
-} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
-
-const firebaseConfig = {
-apiKey: "AIzaSyDNrlP_auYAjDU6C43THl3cOvVqmQR1kYM",
-authDomain: "talktime-70e88.firebaseapp.com",
-projectId: "talktime-70e88",
-messagingSenderId: "356630061165",
-appId: "1:356630061165:web:156f9afef56c58d1881f64"
+<script>
+const firebaseConfig={
+ apiKey:"AIzaSyDNrlP_auYjDU6C43THl3cOvVqmQR1kYM",
+ authDomain:"talktime-70e88.firebaseapp.com",
+ projectId:"talktime-70e88",
+ storageBucket:"talktime-70e88.firebasestorage.app",
+ messagingSenderId:"356630061165",
+ appId:"1:356630061165:web:156f9afef56c58d1881f64"
 };
 
-const OWNER_UID = "RCRj1YJf0hSeZIPIzLgpJHQYHNR2";
+firebase.initializeApp(firebaseConfig);
+const auth=firebase.auth();
+const db=firebase.firestore();
+const storage=firebase.storage();
 
-const $ = id => document.getElementById(id);
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getFirestore(app);
+const OWNER_UID="RCRj1YJf0hSeZIPIzLgpJHQYHNR2";
+let user=null,profile=null,privateRoom=null;
+let messageListener=null,privateListener=null;
 
-let currentUser = null;
-let myProfile = null;
-let stopMessages = null;
-let stopMembers = null;
-let stopPrivate = null;
+const gifts=[
+ ["🎁","Small Gift",100],
+ ["🌹","Rose",200],
+ ["💐","Bouquet",300],
+ ["👑","Crown",400],
+ ["💎","Diamond",500]
+];
 
-function status(id,message){
-$(id).textContent = message;
+function $(id){return document.getElementById(id)}
+function safe(s){
+ return String(s??"").replace(/[&<>"']/g,c=>({
+ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
+ }[c]));
+}
+function currentRank(){return profile?.rank||"Member"}
+function isOwner(){return user?.uid===OWNER_UID}
+function canNews(){return isOwner()||["Admin","Super Admin"].includes(currentRank())}
+function levelFor(x){return Math.floor((Number(x)||0)/100)+1}
+
+function showPage(id){
+ document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));
+ $(id).classList.add("active");
+ if(id==="members")loadMembers();
+ if(id==="wall")loadWall();
+ if(id==="news")loadNews();
 }
 
-function safeText(value){
-return String(value ?? "").replace(/[&<>"']/g,c=>({
-"&":"&amp;",
-"<":"&lt;",
-">":"&gt;",
-'"':"&quot;",
-"'":"&#39;"
-}[c]));
+async function signup(){
+ try{
+  await auth.createUserWithEmailAndPassword($("email").value.trim(),$("password").value);
+ }catch(e){$("loginStatus").textContent=e.message}
+}
+async function login(){
+ try{
+  await auth.signInWithEmailAndPassword($("email").value.trim(),$("password").value);
+ }catch(e){$("loginStatus").textContent=e.message}
+}
+function logout(){auth.signOut()}
+
+async function prepareProfile(u){
+ const ref=db.collection("users").doc(u.uid);
+ const snap=await ref.get();
+ if(!snap.exists){
+  await ref.set({
+   uid:u.uid,email:u.email||"",
+   displayName:(u.email||"User").split("@")[0],
+   rank:u.uid===OWNER_UID?"Owner":"Member",
+   xp:0,level:1,coins:0,rubies:0,
+   createdAt:firebase.firestore.FieldValue.serverTimestamp()
+  });
+  return (await ref.get()).data();
+ }
+ if(u.uid===OWNER_UID && snap.data().rank!=="Owner"){
+  await ref.update({rank:"Owner"});
+ }
+ return (await ref.get()).data();
 }
 
-function isOwner(){
-return currentUser && currentUser.uid === OWNER_UID;
+function updateProfile(){
+ const xp=Number(profile.xp)||0;
+ $("myName").textContent=profile.displayName||user.email;
+ $("myRank").textContent="Rank: "+currentRank();
+ $("level").textContent=levelFor(xp);
+ $("xp").textContent=xp;
+ $("coins").textContent=Number(profile.coins)||0;
+ $("rubies").textContent=Number(profile.rubies)||0;
+ $("userLabel").textContent=user.email||"Online";
+ $("ownerButton").classList.toggle("hidden",!isOwner());
+ $("newsEditor").classList.toggle("hidden",!canNews());
 }
 
-$("signup").onclick = async()=>{
-try{
-status("authStatus","Creating account...");
-await createUserWithEmailAndPassword(
-auth,
-$("email").value.trim(),
-$("password").value
-);
-status("authStatus","Account created.");
-}catch(e){
-status("authStatus",e.message);
-}
-};
-
-$("login").onclick = async()=>{
-try{
-status("authStatus","Logging in...");
-await signInWithEmailAndPassword(
-auth,
-$("email").value.trim(),
-$("password").value
-);
-}catch(e){
-status("authStatus",e.message);
-}
-};
-
-$("logout").onclick = ()=>signOut(auth);
-
-$("send").onclick = async()=>{
-const text = $("messageText").value.trim();
-if(!text)return;
-
-try{
-await addDoc(collection(db,"messages"),{
-uid:currentUser.uid,
-name:myProfile.name,
-rank:myProfile.rank,
-text,
-createdAt:serverTimestamp()
+auth.onAuthStateChanged(async u=>{
+ user=u;
+ if(!u){
+  $("loginBox").classList.remove("hidden");
+  $("app").classList.add("hidden");
+  $("userLabel").textContent="Not logged in";
+  if(messageListener)messageListener();
+  if(privateListener)privateListener();
+  return;
+ }
+ try{
+  profile=await prepareProfile(u);
+  updateProfile();
+  $("loginBox").classList.add("hidden");
+  $("app").classList.remove("hidden");
+  listenChat();
+  loadNews();
+ }catch(e){$("loginStatus").textContent="Profile error: "+e.message}
 });
 
-$("messageText").value="";
-status("chatStatus","");
-}catch(e){
-status("chatStatus",e.message);
-}
-};
-
-$("privateSend").onclick = async()=>{
-const otherUid = $("memberUid").value.trim();
-const text = $("privateText").value.trim();
-
-if(!otherUid || !text){
-return status("privateStatus","Enter member UID and message.");
+function hasLink(s){
+ return /(https?:\/\/|www\.|[a-z0-9-]+\.(com|net|org|pk|io|co|ly|gg)(\/|$))/i.test(s);
 }
 
-if(otherUid === currentUser.uid){
-return status("privateStatus","You cannot message yourself.");
+function listenChat(){
+ if(messageListener)messageListener();
+ messageListener=db.collection("messages")
+ .orderBy("createdAt","asc").limitToLast(100)
+ .onSnapshot(s=>{
+  $("chatMessages").innerHTML="";
+  s.forEach(d=>{
+   const x=d.data();
+   const el=document.createElement("div");
+   el.className="message";
+   let body=safe(x.text||"");
+   if(x.youtubeId){
+    body+=`<iframe width="100%" height="190" src="https://www.youtube-nocookie.com/embed/${safe(x.youtubeId)}" allowfullscreen></iframe>`;
+   }
+   if(x.mediaUrl){
+    if((x.mediaType||"").startsWith("image/"))body+=`<img src="${safe(x.mediaUrl)}">`;
+    else if((x.mediaType||"").startsWith("video/"))body+=`<video controls src="${safe(x.mediaUrl)}"></video>`;
+    else if((x.mediaType||"").startsWith("audio/"))body+=`<audio controls src="${safe(x.mediaUrl)}"></audio>`;
+   }
+   el.innerHTML=`<div class="meta"><b>${safe(x.name||x.email||"User")}</b> • ${safe(x.rank||"Member")}</div>${body}`;
+   $("chatMessages").appendChild(el);
+  });
+  $("chatMessages").scrollTop=$("chatMessages").scrollHeight;
+ },e=>console.log(e));
 }
 
-const roomId = [currentUser.uid,otherUid].sort().join("_");
-
-try{
-await addDoc(
-collection(db,"privateRooms",roomId,"messages"),
-{
-uid:currentUser.uid,
-name:myProfile.name,
-text,
-createdAt:serverTimestamp()
+async function sendChat(text){
+ text=(text??$("chatText").value).trim();
+ if(!text)return;
+ if(text.length>1000)return alert("Message too long.");
+ if(hasLink(text))return alert("Normal links are not allowed.");
+ await db.collection("messages").add({
+  uid:user.uid,email:user.email,name:profile.displayName||user.email,
+  rank:currentRank(),text,
+  createdAt:firebase.firestore.FieldValue.serverTimestamp()
+ });
+ $("chatText").value="";
 }
-);
+function sendSticker(s){sendChat(s)}
+function toggleStickers(){$("stickerBox").classList.toggle("hidden")}
 
-$("privateText").value="";
-status("privateStatus","Private message sent.");
-watchPrivate(roomId);
-
-}catch(e){
-status("privateStatus",e.message);
-}
-};
-
-function watchPrivate(roomId){
-if(stopPrivate)stopPrivate();
-
-const q = query(
-collection(db,"privateRooms",roomId,"messages"),
-orderBy("createdAt"),
-limit(100)
-);
-
-stopPrivate = onSnapshot(q,snap=>{
-$("privateMessages").innerHTML = snap.docs.map(d=>{
-const m=d.data();
-return `<div class="msg">
-<b>${safeText(m.name||"Member")}</b><br>
-${safeText(m.text)}
-</div>`;
-}).join("");
-},e=>status("privateStatus",e.message));
+function shareYoutube(){
+ const raw=prompt("YouTube video link paste karo:");
+ if(!raw)return;
+ let id=null;
+ try{
+  const u=new URL(raw);
+  if(["youtube.com","www.youtube.com","m.youtube.com"].includes(u.hostname))
+   id=u.searchParams.get("v")||u.pathname.split("/embed/")[1];
+  if(["youtu.be","www.youtu.be"].includes(u.hostname))id=u.pathname.slice(1);
+ }catch(e){}
+ if(!/^[A-Za-z0-9_-]{11}$/.test(id||""))return alert("Valid YouTube video link do.");
+ db.collection("messages").add({
+  uid:user.uid,email:user.email,name:profile.displayName||user.email,
+  rank:currentRank(),text:"",youtubeId:id,
+  createdAt:firebase.firestore.FieldValue.serverTimestamp()
+ });
 }
 
-// Owner rank management
-$("ownerMembers").onclick = async(event)=>{
-const button = event.target.closest("button[data-uid]");
-if(!button)return;
-
-if(!isOwner()){
-status("ownerStatus","Owner permission required.");
-return;
+async function uploadMedia(event){
+ const file=event.target.files[0];if(!file)return;
+ const limits={Member:5,VIP:10,"Super VIP":20,Moderator:25,Admin:40,"Super Admin":50,Owner:100};
+ const mb=limits[currentRank()]||5;
+ if(file.size>mb*1024*1024)return alert("Tumhari upload limit "+mb+" MB hai.");
+ if(!/^(image|video|audio)\//.test(file.type))return alert("File type allowed nahi.");
+ try{
+  const path="uploads/"+user.uid+"/"+Date.now()+"_"+file.name.replace(/[^a-zA-Z0-9._-]/g,"_");
+  const ref=storage.ref(path);
+  await ref.put(file);
+  const url=await ref.getDownloadURL();
+  await db.collection("messages").add({
+   uid:user.uid,email:user.email,name:profile.displayName||user.email,
+   rank:currentRank(),text:"",mediaUrl:url,mediaType:file.type,
+   createdAt:firebase.firestore.FieldValue.serverTimestamp()
+  });
+ }catch(e){alert("Upload error: "+e.message+" Check Firebase Storage setup.");}
+ event.target.value="";
 }
 
-const uid = button.dataset.uid;
-const select = document.getElementById("rank-"+uid);
-
-if(!select)return;
-
-const newRank = select.value;
-const allowedRanks = ["Member","Moderator","Admin"];
-
-if(!allowedRanks.includes(newRank)){
-status("ownerStatus","Invalid rank.");
-return;
+async function openPrivate(){
+ const email=$("friendEmail").value.trim().toLowerCase();
+ if(!email)return;
+ const q=await db.collection("users").where("email","==",email).limit(1).get();
+ if(q.empty)return alert("User nahi mila.");
+ const other=q.docs[0].id;
+ if(other===user.uid)return alert("Apne aap ko message nahi bhej sakte.");
+ privateRoom=[user.uid,other].sort().join("_");
+ if(privateListener)privateListener();
+ privateListener=db.collection("privateRooms").doc(privateRoom)
+ .collection("messages").orderBy("createdAt","asc").limitToLast(60)
+ .onSnapshot(s=>{
+  $("privateMessages").innerHTML="";
+  s.forEach(d=>{
+   const x=d.data(),el=document.createElement("div");
+   el.className="item";
+   el.textContent=(x.email||"User")+": "+(x.text||"");
+   $("privateMessages").appendChild(el);
+  });
+ });
+}
+async function sendPrivate(){
+ const text=$("privateText").value.trim();
+ if(!privateRoom||!text)return;
+ if(hasLink(text))return alert("Links allowed nahi.");
+ await db.collection("privateRooms").doc(privateRoom)
+ .collection("messages").add({
+  uid:user.uid,email:user.email,text,
+  createdAt:firebase.firestore.FieldValue.serverTimestamp()
+ });
+ $("privateText").value="";
 }
 
-if(uid === OWNER_UID){
-status("ownerStatus","Owner rank cannot be changed here.");
-return;
+async function postWall(){
+ const text=$("wallText").value.trim();
+ if(!text)return;
+ if(hasLink(text))return alert("Links allowed nahi.");
+ await db.collection("wallPosts").add({
+  uid:user.uid,email:user.email,
+  name:profile.displayName||user.email,text,
+  createdAt:firebase.firestore.FieldValue.serverTimestamp()
+ });
+ $("wallText").value="";loadWall();
+}
+async function loadWall(){
+ try{
+  const s=await db.collection("wallPosts").orderBy("createdAt","desc").limit(40).get();
+  $("wallList").innerHTML="";
+  s.forEach(d=>{
+   const x=d.data(),el=document.createElement("div");
+   el.className="item";
+   el.innerHTML=`<b>${safe(x.name||x.email)}</b><p>${safe(x.text)}</p>`;
+   $("wallList").appendChild(el);
+  });
+ }catch(e){$("wallList").textContent=e.message}
 }
 
-try{
-button.disabled = true;
-status("ownerStatus","Updating rank...");
-
-await updateDoc(doc(db,"users",uid),{
-rank:newRank
-});
-
-status("ownerStatus","Rank updated successfully.");
-}catch(e){
-status("ownerStatus",e.message);
-}finally{
-button.disabled = false;
+async function publishNews(){
+ if(!canNews())return alert("Permission nahi.");
+ const title=$("newsTitle").value.trim(),body=$("newsBody").value.trim();
+ if(!title||!body)return;
+ await db.collection("news").add({
+  title,body,uid:user.uid,
+  createdAt:firebase.firestore.FieldValue.serverTimestamp()
+ });
+ $("newsTitle").value="";$("newsBody").value="";loadNews();
 }
-};
-
-function startMembers(){
-if(stopMembers)stopMembers();
-
-stopMembers = onSnapshot(
-query(collection(db,"users"),limit(100)),
-snap=>{
-
-const docs = snap.docs;
-
-$("members").innerHTML = docs.map(d=>{
-const m=d.data();
-return `<div class="msg">
-<b>${safeText(m.name||"Member")}</b>
-— ${safeText(m.rank||"Member")}
-<br><small>UID: ${safeText(m.uid||d.id)}</small>
-</div>`;
-}).join("");
-
-if(!isOwner())return;
-
-$("ownerMembers").innerHTML = docs.map(d=>{
-const m=d.data();
-const uid=d.id;
-const rank=m.rank||"Member";
-
-if(uid === OWNER_UID){
-return `<div class="msg">
-<b>${safeText(m.name||"Owner")}</b>
-— Owner 👑
-</div>`;
+async function loadNews(){
+ try{
+  const s=await db.collection("news").orderBy("createdAt","desc").limit(30).get();
+  $("newsList").innerHTML="";
+  s.forEach(d=>{
+   const x=d.data(),el=document.createElement("div");
+   el.className="item";
+   el.innerHTML=`<h3>${safe(x.title)}</h3><p>${safe(x.body)}</p>`;
+   $("newsList").appendChild(el);
+  });
+ }catch(e){$("newsList").textContent=e.message}
+}
+async function loadMembers(){
+ try{
+  const s=await db.collection("users").limit(100).get();
+  $("memberList").innerHTML="";
+  s.forEach(d=>{
+   const x=d.data(),el=document.createElement("div");
+   el.className="item";
+   el.innerHTML=`<b>${safe(x.displayName||x.email)}</b> • ${safe(x.rank||"Member")} • Level ${levelFor(x.xp||0)}`;
+   $("memberList").appendChild(el);
+  });
+ }catch(e){$("memberList").textContent=e.message}
 }
 
-return `<div class="msg">
-<b>${safeText(m.name||"Member")}</b>
-<br><small>UID: ${safeText(uid)}</small>
-<div class="member-controls">
-<select id="rank-${safeText(uid)}">
-<option value="Member" ${rank==="Member"?"selected":""}>Member</option>
-<option value="Moderator" ${rank==="Moderator"?"selected":""}>Moderator</option>
-<option value="Admin" ${rank==="Admin"?"selected":""}>Admin</option>
-</select>
-<button data-uid="${safeText(uid)}">Update Rank</button>
-</div>
-</div>`;
-}).join("");
-
-},
-e=>{
-$("members").textContent=e.message;
-status("ownerStatus",e.message);
-}
-);
+function rollDice(){
+ const n=1+Math.floor(Math.random()*6);
+ $("dice").textContent=["⚀","⚁","⚂","⚃","⚄","⚅"][n-1];
+ $("diceResult").textContent="Tumhara number "+n+" aya!";
+ // Secure coin rewards will be enabled with a trusted server function.
 }
 
-function startMessages(){
-if(stopMessages)stopMessages();
+$("giftList").innerHTML=gifts.map((g,i)=>
+ `<div class="gift"><span>${g[0]}</span><h4>${g[1]}</h4><p>🪙 ${g[2]} Coins</p><button onclick="sendGift(${i})">Send Gift</button></div>`
+).join("");
 
-const q=query(
-collection(db,"messages"),
-orderBy("createdAt"),
-limit(100)
-);
-
-stopMessages=onSnapshot(q,snap=>{
-$("messages").innerHTML=snap.docs.map(d=>{
-const m=d.data();
-return `<div class="msg">
-<b>${safeText(m.name||"Member")}</b>
-<small>(${safeText(m.rank||"Member")})</small><br>
-${safeText(m.text)}
-</div>`;
-}).join("");
-
-$("messages").scrollTop=$("messages").scrollHeight;
-
-},e=>status("chatStatus",e.message));
+async function sendGift(index){
+ const email=$("giftEmail").value.trim().toLowerCase();
+ if(!email)return alert("Receiver email likho.");
+ const gift=gifts[index];
+ try{
+  const q=await db.collection("users").where("email","==",email).limit(1).get();
+  if(q.empty)return alert("Receiver nahi mila.");
+  if(q.docs[0].id===user.uid)return alert("Khud ko gift nahi bhej sakte.");
+  // Requires secure server-side gift processing before public launch.
+  alert("Gift system ko secure server verification ke baad activate karna hoga.");
+ }catch(e){alert(e.message)}
 }
 
-onAuthStateChanged(auth,async user=>{
-currentUser=user;
-
-if(!user){
-$("auth").style.display="block";
-$("app").style.display="none";
-$("ownerPanel").style.display="none";
-
-if(stopMessages)stopMessages();
-if(stopMembers)stopMembers();
-if(stopPrivate)stopPrivate();
-
-stopMessages=null;
-stopMembers=null;
-stopPrivate=null;
-myProfile=null;
-return;
+async function changeRank(){
+ if(!isOwner())return;
+ const email=$("manageEmail").value.trim().toLowerCase();
+ const rank=$("newRank").value;
+ const q=await db.collection("users").where("email","==",email).limit(1).get();
+ if(q.empty)return $("ownerStatus").textContent="Member nahi mila.";
+ try{
+  await q.docs[0].ref.update({rank});
+  $("ownerStatus").textContent="Rank update request sent.";
+ }catch(e){$("ownerStatus").textContent=e.message}
 }
-
-try{
-const profileRef=doc(db,"users",user.uid);
-const profileSnap=await getDoc(profileRef);
-
-if(!profileSnap.exists()){
-const name=user.email.split("@")[0];
-
-await setDoc(profileRef,{
-uid:user.uid,
-name,
-email:user.email,
-rank:"Member",
-createdAt:serverTimestamp()
-});
-
-myProfile={name,rank:"Member"};
-}else{
-myProfile=profileSnap.data();
-}
-
-$("myName").textContent=myProfile.name||"Member";
-
-$("myRank").textContent=isOwner()
-?"Rank: Owner 👑"
-:"Rank: "+(myProfile.rank||"Member");
-
-$("ownerPanel").style.display=isOwner()?"block":"none";
-
-$("auth").style.display="none";
-$("app").style.display="block";
-
-startMessages();
-startMembers();
-
-}catch(e){
-status("authStatus",e.message);
-}
-});
 </script>
 </body>
 </html>
