@@ -1,211 +1,738 @@
-<!doctype html>
+
+<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>TalkTime</title>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
 <style>
 *{box-sizing:border-box}
-body{margin:0;background:#030d2c;color:white;font-family:Arial,sans-serif}
-header{height:60px;background:#061943;padding:15px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #233b72}
-.logo{font-size:22px;font-weight:bold}.logo span{color:#59c9ff}
-button,input,textarea{font:inherit}
-button{cursor:pointer;color:white;border:0}
-.auth{max-width:420px;margin:60px auto;padding:22px;background:#0c2052;border-radius:18px}
-.auth input,.field{width:100%;padding:13px;margin:7px 0;background:#071638;border:1px solid #314a80;border-radius:10px;color:white}
-.primary{width:100%;padding:13px;background:#315ff0;border-radius:10px;margin-top:10px}
-.link{background:none;color:#85d8ff;width:100%;padding:12px}
-#app{display:none}
-.layout{display:grid;grid-template-columns:60px 1fr 250px;min-height:calc(100vh - 116px)}
-.side{background:#041033;padding:12px 6px;display:flex;flex-direction:column;gap:10px;align-items:center}
-.side button{width:44px;height:44px;border-radius:13px;background:#10285c;font-size:21px}
-.center{min-width:0;background:#06143b;display:flex;flex-direction:column}
-.room{padding:13px;background:#081943;border-bottom:1px solid #233b72;display:flex;justify-content:space-between;align-items:center}
-select{background:#132b62;color:white;border:0;padding:9px;border-radius:18px}
-.chat{height:calc(100vh - 220px);min-height:300px;overflow:auto;padding:15px;background:radial-gradient(ellipse at bottom,#112451,#06143b)}
-.welcome{text-align:center;color:#aebbd8;margin:20px}
-.message{display:flex;gap:9px;margin:15px 0;align-items:flex-start}
-.avatar{width:40px;height:40px;flex-shrink:0;border-radius:50%;background:#24447e;border:2px solid #36bfe9;display:grid;place-items:center;font-weight:bold}
-.name{color:#55d5c5;font-weight:bold;margin-bottom:6px}
-.rank{color:#ffd45c;font-size:12px}
-.bubble{background:#172f68;padding:11px 14px;border-radius:5px 16px 16px;display:inline-block;overflow-wrap:anywhere;white-space:pre-wrap}
-.mine{flex-direction:row-reverse}
-.mine .bubble{background:#284ba2;border-radius:16px 5px 16px 16px}
-.mine .body{text-align:right}
-.composer{display:flex;gap:7px;padding:10px;background:#06163e;border-top:1px solid #233b72}
-.composer button{width:40px;border-radius:50%;background:#10285c;font-size:20px}
-.composer input{flex:1;min-width:0;border-radius:25px;padding:12px;background:#081638;border:1px solid #263e75;color:white}
-.composer .send{background:#315ff0}
-.members{background:#07183f;padding:13px;border-left:1px solid #233b72}
-.member{display:flex;gap:9px;align-items:center;padding:10px 3px;border-bottom:1px solid #1a2d5c}
-.member small{display:block;color:#ffd45c;margin-top:4px}
-footer{height:56px;background:#061943;display:flex;justify-content:space-between;align-items:center;padding:10px 18px}
-footer button{background:none;font-size:22px}
-.modal{display:none;position:fixed;inset:0;background:#000b;align-items:center;justify-content:center;padding:15px}
-.modal.show{display:flex}
-.box{width:min(100%,420px);max-height:85vh;overflow:auto;background:#0c2052;padding:20px;border:1px solid #385b9c;border-radius:18px}
-.close{float:right;background:#1a326a;border-radius:50%;padding:8px}
-.muted{color:#aebbd8;font-size:12px}
-@media(max-width:800px){.layout{grid-template-columns:52px 1fr}.members{display:none}.side{padding:10px 4px}.side button{width:42px;height:42px}.chat{height:calc(100dvh - 215px)}}
+body{margin:0;background:#071426;color:#eaf2ff;font-family:Arial,sans-serif}
+button{border:0;border-radius:8px;padding:10px 13px;background:#1764c0;color:white;cursor:pointer;margin:3px}
+button:hover{filter:brightness(1.15)}
+input,textarea,select{width:100%;padding:11px;margin:5px 0;background:#091b30;color:white;border:1px solid #294766;border-radius:8px}
+header{height:60px;background:#0b1e35;border-bottom:1px solid #294766;display:flex;align-items:center;justify-content:space-between;padding:0 12px}
+.logo{font-size:23px;font-weight:bold;color:#55baff}
+.app{display:grid;grid-template-columns:205px minmax(0,1fr) 210px;gap:10px;padding:10px;height:calc(100vh - 60px)}
+.panel,.main{background:#0b1e35;border:1px solid #294766;border-radius:12px;min-height:0;overflow:auto}
+.panel{padding:11px}
+.main{display:flex;flex-direction:column}
+.menu button{width:100%;text-align:left;background:#102b49;margin:3px 0}
+.menu button.active{background:#1764c0}
+.topline{padding:13px;border-bottom:1px solid #294766;display:flex;justify-content:space-between}
+.view{padding:13px;overflow:auto;flex:1}
+#messages{flex:1;overflow:auto;padding:12px}
+.msg,.item,.card{background:#102b49;border-radius:10px;padding:11px;margin:8px 0;overflow-wrap:anywhere}
+.msg b{color:#70c7ff}
+.msg small{display:block;color:#91a8c2;margin-top:4px}
+.composer{display:flex;gap:6px;padding:10px;border-top:1px solid #294766}
+.composer input{flex:1}
+.member{padding:10px;border-bottom:1px solid #294766;cursor:pointer}
+.member:hover{background:#102b49}
+.row{display:flex;gap:6px;align-items:center}
+.row>*{min-width:0}
+.muted{color:#91a8c2;font-size:13px}
+.hidden{display:none!important}
+#auth{max-width:400px;margin:8vh auto;padding:20px;background:#0b1e35;border:1px solid #294766;border-radius:14px}
+#toast{display:none;position:fixed;bottom:15px;left:50%;transform:translateX(-50%);background:#1764c0;padding:12px 18px;border-radius:9px;z-index:9}
+@media(max-width:800px){
+.app{grid-template-columns:1fr;height:auto;min-height:calc(100vh - 60px)}
+#left,#right{display:none}
+#left.show,#right.show{display:block}
+.main{height:72vh}
+}
 </style>
 </head>
 <body>
+
 <header>
-<div class="logo">TALK<span>TIME</span></div>
-<div>
-<button id="messagesBtn">✉</button>
-<button id="membersBtn">♙</button>
-<button id="notifyBtn">♧</button>
-<button id="profileBtn">👤</button>
-</div>
+ <div class="logo">TalkTime ✦</div>
+ <div class="row">
+  <button onclick="togglePanel('left')">☰</button>
+  <button onclick="showView('requests')">♧</button>
+  <button onclick="showView('dm')">✉</button>
+  <button onclick="showView('profile')">👤</button>
+  <button onclick="togglePanel('right')">☷</button>
+ </div>
 </header>
 
-<div id="auth" class="auth">
-<h2 id="authTitle">Welcome to TalkTime</h2>
-<p class="muted">Login or create your account</p>
-<form id="authForm">
-<input id="username" placeholder="Username (signup only)" maxlength="20">
-<input id="email" type="email" placeholder="Email address" required>
-<input id="password" type="password" placeholder="Password" minlength="6" required>
-<div id="error" style="color:#ff9aaf;font-size:13px"></div>
-<button class="primary" id="submit">Login</button>
-</form>
-<button class="link" id="switch">Create a new account</button>
+<section id="auth">
+ <h2>Welcome to TalkTime</h2>
+ <p class="muted">Create an account or login</p>
+ <input id="email" type="email" placeholder="Email address">
+ <input id="password" type="password" placeholder="Password">
+ <input id="username" placeholder="Username (signup only)">
+ <div class="row">
+  <button onclick="signup()">Sign Up</button>
+  <button onclick="login()">Login</button>
+ </div>
+ <p id="authError" class="muted"></p>
+</section>
+
+<div class="app hidden" id="app">
+
+ <aside class="panel" id="left">
+  <h3>TalkTime Menu</h3>
+  <div class="menu">
+   <button onclick="showView('chat',this)" class="active">💬 Main Chat</button>
+   <button onclick="showView('ranking',this)">🏆 Ranking</button>
+   <button onclick="showView('news',this)">📰 News</button>
+   <button onclick="showView('wall',this)">🧱 Friends Wall</button>
+   <button onclick="showView('requests',this)">🤝 Friend Requests</button>
+   <button onclick="showView('dm',this)">✉ Private Messages</button>
+   <button onclick="showView('games',this)">🎲 Games</button>
+   <button onclick="showView('members',this)">👥 Members</button>
+   <button onclick="showView('youtube',this)">▶ YouTube Songs</button>
+   <button onclick="showView('settings',this)">⚙ Settings</button>
+   <button onclick="showView('profile',this)">👤 My Profile</button>
+  </div>
+  <button onclick="logout()">Logout</button>
+ </aside>
+
+ <main class="main">
+  <div class="topline">
+   <b id="pageTitle">Main Chat</b>
+   <span id="myRole" class="muted">Member</span>
+  </div>
+
+  <section id="chatView" class="view" style="display:flex;flex-direction:column;min-height:0">
+   <div id="messages"></div>
+   <div class="composer">
+    <input id="messageInput" maxlength="200" placeholder="Write message (max 200)">
+    <button onclick="sendMessage()">Send</button>
+   </div>
+   <div class="row" style="padding:0 10px 10px">
+    <button onclick="addEmoji('😊')">😊</button>
+    <button onclick="addEmoji('❤️')">❤️</button>
+    <button onclick="addEmoji('😂')">😂</button>
+    <button onclick="addEmoji('🎉')">🎉</button>
+   </div>
+  </section>
+
+  <section id="otherView" class="view hidden"></section>
+ </main>
+
+ <aside class="panel" id="right">
+  <h3>Members</h3>
+  <p class="muted">TalkTime community</p>
+  <div id="memberList"></div>
+ </aside>
 </div>
 
-<div id="app">
-<div class="layout">
-<nav class="side">
-<button title="Chat">⌂</button>
-<button title="Activity">◔</button>
-<button title="News">▤</button>
-<button title="Ranks">♛</button>
-<button title="Help">?</button>
-<button title="Rooms" onclick="document.getElementById('room').focus()">#</button>
-</nav>
-<main class="center">
-<div class="room"><strong id="roomTitle">Main Lobby</strong>
-<select id="room">
-<option value="main">Main Lobby</option>
-<option value="lahore">Lahore</option>
-<option value="karachi">Karachi</option>
-<option value="islamabad">Islamabad</option>
-<option value="multan">Multan</option>
-<option value="peshawar">Peshawar</option>
-<option value="quetta">Quetta</option>
-</select></div>
-<div class="chat" id="chat"><div class="welcome">Welcome to TalkTime. Keep the chat friendly.</div></div>
-<form class="composer" id="messageForm">
-<button type="button" id="plus">＋</button>
-<button type="button" id="emoji">☺</button>
-<input id="message" maxlength="1000" placeholder="Type here..." autocomplete="off">
-<button class="send">➤</button>
-</form>
-</main>
-<aside class="members">
-<strong>Members <span id="count" class="muted">0</span></strong>
-<div id="memberList"></div>
-</aside>
-</div>
-<footer><button id="music">▶</button><button id="menu">☰</button></footer>
-</div>
+<div id="toast"></div>
 
-<div class="modal" id="modal">
-<div class="box">
-<button class="close" onclick="closeModal()">✕</button>
-<h3 id="modalTitle">TalkTime</h3>
-<div id="modalBody"></div>
-</div>
-</div>
-
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 <script>
 const firebaseConfig={
-apiKey:"AIzaSyDNrlP_auYAjDU6C43THl3cOvVqmQR1kYM",
-authDomain:"talktime-70e88.firebaseapp.com",
-projectId:"talktime-70e88",
-storageBucket:"talktime-70e88.firebasestorage.app",
-messagingSenderId:"356630061165",
-appId:"1:356630061165:web:156f9afef56c58d1881f64",
-measurementId:"G-VS2EHB4KM7"
+ apiKey:"AIzaSyDNrlP_auYAjDU6C43THl3cOvVqmQR1kYM",
+ authDomain:"talktime-70e88.firebaseapp.com",
+ projectId:"talktime-70e88",
+ storageBucket:"talktime-70e88.firebasestorage.app",
+ messagingSenderId:"356630061165",
+ appId:"1:356630061165:web:156f9afef56c58d1881f64",
+ measurementId:"G-VS2EHB4KM7"
 };
+
 firebase.initializeApp(firebaseConfig);
-const auth=firebase.auth(),db=firebase.firestore();
+const auth=firebase.auth();
+const db=firebase.firestore();
 const OWNER_UID="RCRj1YJf0hSeZIPIzLgpJHQYHNR2";
-let signup=false,user=null,profile=null,room="main",msgStop=null,userStop=null;
-const $=id=>document.getElementById(id);
-function safe(s){return String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
-function initials(s){return (s||"TT").slice(0,2).toUpperCase()}
-function rank(uid){return uid===OWNER_UID?"👑 Owner":"Member"}
-function openModal(title,body){$("modalTitle").textContent=title;$("modalBody").innerHTML=body;$("modal").classList.add("show")}
-function closeModal(){$("modal").classList.remove("show")}
-$("switch").onclick=()=>{signup=!signup;$("authTitle").textContent=signup?"Create your TalkTime account":"Welcome to TalkTime";$("username").style.display=signup?"block":"none";$("username").required=signup;$("submit").textContent=signup?"Sign up":"Login";$("switch").textContent=signup?"I already have an account":"Create a new account";$("error").textContent=""};
-$("username").style.display="none";
-$("authForm").onsubmit=async e=>{
-e.preventDefault();$("error").textContent="";
-try{
-if(signup){
-let n=$("username").value.trim();
-if(n.length<3||n.length>20)throw Error("Username 3 se 20 characters ka hona chahiye.");
-let c=await auth.createUserWithEmailAndPassword($("email").value.trim(),$("password").value);
-await db.collection("users").doc(c.user.uid).set({username:n,bio:"",createdAt:firebase.firestore.FieldValue.serverTimestamp()});
-}else await auth.signInWithEmailAndPassword($("email").value.trim(),$("password").value);
-}catch(e){$("error").textContent=e.message}
-};
-auth.onAuthStateChanged(async u=>{
-user=u;
-if(!u){$("auth").style.display="block";$("app").style.display="none";if(msgStop)msgStop();if(userStop)userStop();return}
-try{
-let s=await db.collection("users").doc(u.uid).get();
-if(!s.exists)throw Error("Profile nahi mili. Sign out karke dobara signup karein.");
-profile=s.data();$("auth").style.display="none";$("app").style.display="block";
-$("profileBtn").textContent=initials(profile.username);
-listenUsers();listenMessages();
-}catch(e){alert(e.message)}
-});
-function listenUsers(){
-if(userStop)userStop();
-userStop=db.collection("users").onSnapshot(s=>{
-let a=[];s.forEach(d=>a.push({uid:d.id,...d.data()}));
-a.sort((x,y)=>x.uid===OWNER_UID?-1:y.uid===OWNER_UID?1:(x.username||"").localeCompare(y.username||""));
-$("count").textContent=a.length;
-let html=a.map(x=>`<div class="member"><div class="avatar">${safe(initials(x.username))}</div><div><b>${safe(x.username)}</b><small>${safe(rank(x.uid))}</small></div></div>`).join("");
-$("memberList").innerHTML=html||"No members";
-},e=>console.log(e));
+
+let me=null;
+let myData=null;
+let users=[];
+let messageUnsub=null;
+let memberUnsub=null;
+let wallUnsub=null;
+let newsUnsub=null;
+let requestUnsub=null;
+let dmUnsubs=[];
+let currentView="chat";
+let dmTarget="";
+
+function toast(t){
+ const el=document.getElementById("toast");
+ el.textContent=t;
+ el.style.display="block";
+ setTimeout(()=>el.style.display="none",2600);
 }
-function listenMessages(){
-if(msgStop)msgStop();
-$("roomTitle").textContent=room==="main"?"Main Lobby":room[0].toUpperCase()+room.slice(1);
-msgStop=db.collection("rooms").doc(room).collection("messages").orderBy("createdAt","asc").limit(100).onSnapshot(s=>{
-let html="";
-if(s.empty)html='<div class="welcome">Room ready. Send the first message!</div>';
-s.forEach(d=>{
-let m=d.data(),mine=m.uid===user.uid;
-let t=m.createdAt&&m.createdAt.toDate?m.createdAt.toDate().toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"}):"";
-html+=`<div class="message ${mine?"mine":""}"><div class="avatar">${safe(initials(m.username))}</div><div class="body"><div class="name">${safe(m.username)} <span class="rank">${safe(rank(m.uid))}</span> <span class="muted">${safe(t)}</span></div><div class="bubble">${safe(m.text)}</div></div></div>`;
-});
-$("chat").innerHTML=html;$("chat").scrollTop=$("chat").scrollHeight;
-},e=>{$("chat").innerHTML='<div class="welcome">Messages load nahi huay. Firebase rules check karein.</div>';console.log(e)});
+function safe(s){
+ return String(s??"").replace(/[&<>"']/g,c=>({
+  "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
+ }[c]));
 }
-$("room").onchange=e=>{room=e.target.value;listenMessages()};
-$("messageForm").onsubmit=async e=>{
-e.preventDefault();let text=$("message").value.trim();if(!text)return;
-if(/https?:\/\/|www\./i.test(text)){alert("External links allowed nahi hain.");return}
-$("message").value="";
-try{await db.collection("rooms").doc(room).collection("messages").add({uid:user.uid,username:profile.username,text,createdAt:firebase.firestore.FieldValue.serverTimestamp()})}
-catch(e){$("message").value=text;alert(e.message)}
-};
-$("emoji").onclick=()=>{$("message").value+=" 😊";$("message").focus()};
-$("plus").onclick=()=>openModal("More options","Photo uploads, stickers, YouTube sharing and microphone need extra Firebase setup and are not active yet.");
-$("profileBtn").onclick=()=>openModal("My Profile",`<div style="text-align:center"><div class="avatar" style="width:85px;height:85px;margin:auto;font-size:25px">${safe(initials(profile.username))}</div><h2>${safe(profile.username)}</h2><p>${safe(rank(user.uid))}</p></div><label class="muted">About me</label><textarea id="bio" class="field" maxlength="160">${safe(profile.bio||"")}</textarea><button class="primary" onclick="saveBio()">Save bio</button><button class="primary" onclick="auth.signOut()">Log out</button>`);
-window.saveBio=async()=>{try{let b=$("bio").value.trim();await db.collection("users").doc(user.uid).update({bio:b});profile.bio=b;alert("Bio saved");closeModal()}catch(e){alert(e.message)}};
-$("membersBtn").onclick=()=>openModal("Members",$("memberList").innerHTML||"No members");
-$("messagesBtn").onclick=()=>openModal("Messages","Private messages are not enabled yet. Public room chat is active.");
-$("notifyBtn").onclick=()=>openModal("Notifications","Live room messages are shown in the chat.");
-$("music").onclick=()=>openModal("Music","Web radio is not enabled yet.");
-$("menu").onclick=()=>$("profileBtn").click();
+function roleOf(u){
+ return u.uid===OWNER_UID?"Owner":"Member";
+}
+function stopListener(fn){
+ if(fn){fn();}
+}
+function clearViewListeners(){
+ if(wallUnsub){wallUnsub();wallUnsub=null;}
+ if(newsUnsub){newsUnsub();newsUnsub=null;}
+ if(requestUnsub){requestUnsub();requestUnsub=null;}
+ dmUnsubs.forEach(fn=>fn());
+ dmUnsubs=[];
+}
+function togglePanel(id){
+ document.getElementById(id).classList.toggle("show");
+}
+
+async function signup(){
+ const email=document.getElementById("email").value.trim();
+ const password=document.getElementById("password").value;
+ const username=document.getElementById("username").value.trim();
+
+ if(!email||!password||username.length<3||username.length>24){
+  document.getElementById("authError").textContent="Enter email, password and username (3–24 characters).";
+  return;
+ }
+ try{
+  const result=await auth.createUserWithEmailAndPassword(email,password);
+  await db.collection("users").doc(result.user.uid).set({
+   username:username,
+   bio:"",
+   role:"Member",
+   createdAt:firebase.firestore.FieldValue.serverTimestamp()
+  });
+ }catch(e){
+  document.getElementById("authError").textContent=e.message;
+ }
+}
+
+async function login(){
+ try{
+  await auth.signInWithEmailAndPassword(
+   document.getElementById("email").value.trim(),
+   document.getElementById("password").value
+  );
+ }catch(e){
+  document.getElementById("authError").textContent=e.message;
+ }
+}
+
+async function logout(){
+ await auth.signOut();
+}
+
+auth.onAuthStateChanged(async user=>{
+ if(!user){
+  me=null;
+  if(messageUnsub){messageUnsub();messageUnsub=null;}
+  if(memberUnsub){memberUnsub();memberUnsub=null;}
+  clearViewListeners();
+  document.getElementById("auth").classList.remove("hidden");
+  document.getElementById("app").classList.add("hidden");
+  return;
+ }
+
+ me=user;
+ try{
+  const ref=db.collection("users").doc(me.uid);
+  let snap=await ref.get();
+
+  if(!snap.exists){
+   let name=(me.email.split("@")[0]||"Member").slice(0,24);
+   if(name.length<3)name="Member";
+   await ref.set({
+    username:name,
+    bio:"",
+    role:"Member",
+    createdAt:firebase.firestore.FieldValue.serverTimestamp()
+   });
+   snap=await ref.get();
+  }
+
+  myData=snap.data();
+  document.getElementById("auth").classList.add("hidden");
+  document.getElementById("app").classList.remove("hidden");
+  document.getElementById("myRole").textContent=roleOf({uid:me.uid,...myData});
+
+  loadMessages();
+  loadMembers();
+
+  const theme=localStorage.getItem("talktimeTheme_"+me.uid);
+  if(theme)setTheme(theme);
+
+  showView("chat");
+ }catch(e){
+  toast("Account error: "+e.message);
+ }
+});
+
+// MAIN CHAT
+function loadMessages(){
+ if(messageUnsub)messageUnsub();
+
+ messageUnsub=db.collection("rooms")
+ .doc("main").collection("messages")
+ .orderBy("createdAt","asc").limit(100)
+ .onSnapshot(s=>{
+  const box=document.getElementById("messages");
+  box.innerHTML="";
+  s.forEach(doc=>{
+   const m=doc.data();
+   const div=document.createElement("div");
+   div.className="msg";
+   const time=m.createdAt?.toDate?m.createdAt.toDate().toLocaleTimeString():"";
+   div.innerHTML="<b>"+safe(m.username)+"</b>: "+safe(m.text)+
+    "<small>"+safe(time)+"</small>";
+   box.appendChild(div);
+  });
+  box.scrollTop=box.scrollHeight;
+ },e=>toast("Chat error: "+e.message));
+}
+
+async function sendMessage(){
+ const input=document.getElementById("messageInput");
+ const text=input.value.trim();
+
+ if(!text)return;
+ if(text.length>200){toast("Maximum 200 characters");return;}
+ if(/https?:\/\/|www\./i.test(text)){toast("Links are not allowed");return;}
+
+ try{
+  await db.collection("rooms").doc("main").collection("messages").add({
+   uid:me.uid,
+   username:myData.username,
+   text:text,
+   createdAt:firebase.firestore.FieldValue.serverTimestamp()
+  });
+  input.value="";
+ }catch(e){
+  toast("Message error: "+e.message);
+ }
+}
+
+document.getElementById("messageInput").addEventListener("keydown",e=>{
+ if(e.key==="Enter")sendMessage();
+});
+
+function addEmoji(emoji){
+ const input=document.getElementById("messageInput");
+ input.value+=emoji;
+ input.focus();
+}
+
+// MEMBERS
+function loadMembers(){
+ if(memberUnsub)memberUnsub();
+
+ memberUnsub=db.collection("users").limit(100).onSnapshot(s=>{
+  users=[];
+  s.forEach(doc=>users.push({uid:doc.id,...doc.data()}));
+  renderMemberSide();
+ },e=>toast("Members error: "+e.message));
+}
+
+function renderMemberSide(){
+ const box=document.getElementById("memberList");
+ box.innerHTML="";
+ users.forEach(u=>{
+  const div=document.createElement("div");
+  div.className="member";
+  div.innerHTML="<b>"+safe(u.username)+"</b><br><span class='muted'>"+safe(roleOf(u))+"</span>";
+  div.onclick=()=>openMember(u.uid);
+  box.appendChild(div);
+ });
+}
+
+// NAVIGATION
+function showView(view,button){
+ currentView=view;
+ clearViewListeners();
+
+ document.getElementById("chatView").classList.toggle("hidden",view!=="chat");
+ document.getElementById("otherView").classList.toggle("hidden",view==="chat");
+
+ document.querySelectorAll(".menu button").forEach(b=>b.classList.remove("active"));
+ if(button)button.classList.add("active");
+
+ const titles={
+  chat:"Main Chat",ranking:"Ranking",news:"News",wall:"Friends Wall",
+  requests:"Friend Requests",dm:"Private Messages",games:"Games",
+  members:"Members",youtube:"YouTube Songs",settings:"Settings",profile:"My Profile"
+ };
+ document.getElementById("pageTitle").textContent=titles[view]||"Member Profile";
+
+ const box=document.getElementById("otherView");
+ box.innerHTML="";
+
+ if(view==="chat")return;
+ if(view==="profile")renderProfile(box);
+ if(view==="settings")renderSettings(box);
+ if(view==="members")renderMembers(box);
+ if(view==="ranking")renderRanking(box);
+ if(view==="requests")renderRequests(box);
+ if(view==="dm")renderDM(box);
+ if(view==="wall")renderWall(box);
+ if(view==="news")renderNews(box);
+ if(view==="games")renderGames(box);
+ if(view==="youtube")renderYoutube(box);
+}
+
+// PROFILE
+function renderProfile(box){
+ box.innerHTML=`
+ <h3>My Profile</h3>
+ <div class="card">
+  <b>${safe(myData.username)}</b>
+  <p class="muted">${safe(roleOf({uid:me.uid,...myData}))}</p>
+ </div>
+ <label>Username</label>
+ <input id="editName" maxlength="24" value="${safe(myData.username)}">
+ <label>Bio</label>
+ <textarea id="editBio" maxlength="160">${safe(myData.bio||"")}</textarea>
+ <button onclick="saveProfile()">Save Profile</button>
+ <button onclick="changePassword()">Change Password</button>
+ <button onclick="logout()">Logout</button>`;
+}
+
+async function saveProfile(){
+ const username=document.getElementById("editName").value.trim();
+ const bio=document.getElementById("editBio").value.trim();
+
+ if(username.length<3||username.length>24){
+  toast("Username must be 3–24 characters");
+  return;
+ }
+ if(bio.length>160){toast("Bio is too long");return;}
+
+ try{
+  await db.collection("users").doc(me.uid).update({username,bio});
+  myData={...myData,username,bio};
+  toast("Profile updated");
+  document.getElementById("myRole").textContent=roleOf({uid:me.uid,...myData});
+ }catch(e){toast(e.message);}
+}
+
+async function changePassword(){
+ const password=prompt("Enter your new password (at least 6 characters):");
+ if(!password)return;
+ if(password.length<6){toast("Password must be at least 6 characters");return;}
+ try{
+  await me.updatePassword(password);
+  toast("Password changed");
+ }catch(e){
+  toast("Please login again before changing password.");
+ }
+}
+
+// MEMBER PROFILES AND FRIEND REQUEST
+function openMember(uid){
+ const u=users.find(x=>x.uid===uid);
+ if(!u)return;
+
+ if(uid===me.uid){showView("profile");return;}
+
+ currentView="member";
+ clearViewListeners();
+ document.getElementById("chatView").classList.add("hidden");
+ const box=document.getElementById("otherView");
+ box.classList.remove("hidden");
+ document.getElementById("pageTitle").textContent="Member Profile";
+
+ box.innerHTML=`
+ <h3>${safe(u.username)}</h3>
+ <p class="muted">${safe(roleOf(u))}</p>
+ <div class="card">${safe(u.bio||"No bio yet.")}</div>
+ <button id="sendFriend">Send Friend Request</button>
+ <button id="sendPrivate">Private Message</button>`;
+
+ document.getElementById("sendFriend").onclick=()=>sendFriendRequest(uid);
+ document.getElementById("sendPrivate").onclick=()=>{
+  dmTarget=uid;
+  showView("dm");
+ };
+}
+
+async function sendFriendRequest(to){
+ try{
+  await db.collection("friendRequests").add({
+   from:me.uid,
+   to:to,
+   status:"pending",
+   createdAt:firebase.firestore.FieldValue.serverTimestamp()
+  });
+  toast("Friend request sent");
+ }catch(e){toast("Request error: "+e.message);}
+}
+
+// FRIEND REQUESTS
+function renderRequests(box){
+ box.innerHTML="<h3>Friend Requests</h3><div id='requestList'>Loading...</div>";
+
+ requestUnsub=db.collection("friendRequests")
+ .where("to","==",me.uid)
+ .where("status","==","pending")
+ .onSnapshot(s=>{
+  const list=document.getElementById("requestList");
+  if(!list)return;
+  list.innerHTML="";
+
+  if(s.empty){list.textContent="No pending requests.";return;}
+
+  s.forEach(doc=>{
+   const r=doc.data();
+   const u=users.find(x=>x.uid===r.from);
+   const item=document.createElement("div");
+   item.className="item";
+   item.textContent=(u?.username||"Member")+" sent you a friend request. ";
+
+   const accept=document.createElement("button");
+   accept.textContent="Accept";
+   accept.onclick=async()=>{
+    try{
+     await doc.ref.update({status:"accepted"});
+     toast("Request accepted");
+    }catch(e){toast(e.message);}
+   };
+
+   item.appendChild(accept);
+   list.appendChild(item);
+  });
+ },e=>toast("Request error: "+e.message));
+}
+
+// PRIVATE MESSAGES
+function renderDM(box){
+ box.innerHTML=`
+ <h3>Private Messages</h3>
+ <p class="muted">Select a member to open a private conversation.</p>
+ <select id="dmSelect">
+  <option value="">Select member</option>
+  ${users.filter(u=>u.uid!==me.uid).map(u=>`<option value="${u.uid}">${safe(u.username)}</option>`).join("")}
+ </select>
+ <div id="dmMessages" class="card" style="min-height:150px"></div>
+ <div class="row">
+  <input id="dmText" maxlength="500" placeholder="Write private message">
+  <button onclick="sendDM()">Send</button>
+ </div>`;
+
+ const select=document.getElementById("dmSelect");
+ if(dmTarget)select.value=dmTarget;
+ select.addEventListener("change",()=>{
+  dmTarget=select.value;
+  loadDM();
+ });
+ if(dmTarget)loadDM();
+}
+
+function loadDM(){
+ dmUnsubs.forEach(fn=>fn());
+ dmUnsubs=[];
+
+ const target=dmTarget;
+ const output=document.getElementById("dmMessages");
+ if(!output||!target)return;
+
+ let sent=[],received=[];
+ function draw(){
+  const all=[...sent,...received].sort((a,b)=>{
+   const at=a.createdAt?.toMillis?a.createdAt.toMillis():0;
+   const bt=b.createdAt?.toMillis?b.createdAt.toMillis():0;
+   return at-bt;
+  });
+  output.innerHTML="";
+  all.forEach(m=>{
+   const div=document.createElement("div");
+   div.className="msg";
+   div.innerHTML="<b>"+(m.from===me.uid?"You":"Member")+
+    ":</b> "+safe(m.text);
+   output.appendChild(div);
+  });
+ }
+ const a=db.collection("dmMessages").where("from","==",me.uid)
+ .onSnapshot(s=>{
+  sent=s.docs.map(d=>d.data()).filter(m=>m.to===target);
+  draw();
+ },e=>toast("Sent messages: "+e.message));
+
+ const b=db.collection("dmMessages").where("to","==",me.uid)
+ .onSnapshot(s=>{
+  received=s.docs.map(d=>d.data()).filter(m=>m.from===target);
+  draw();
+ },e=>toast("Received messages: "+e.message));
+
+ dmUnsubs.push(a,b);
+}
+
+async function sendDM(){
+ const select=document.getElementById("dmSelect");
+ const target=select.value;
+ const input=document.getElementById("dmText");
+ const text=input.value.trim();
+
+ if(!target||!text){toast("Select a member and write a message");return;}
+ if(text.length>500){toast("Maximum 500 characters");return;}
+ if(/https?:\/\/|www\./i.test(text)){toast("Links are not allowed");return;}
+
+ try{
+  await db.collection("dmMessages").add({
+   from:me.uid,
+   to:target,
+   text:text,
+   createdAt:firebase.firestore.FieldValue.serverTimestamp()
+  });
+  input.value="";
+ }catch(e){toast("Private message error: "+e.message);}
+}
+
+// FRIENDS WALL
+function renderWall(box){
+ box.innerHTML=`
+ <h3>Friends Wall</h3>
+ <textarea id="wallText" maxlength="300" placeholder="Write a post (max 300 characters)"></textarea>
+ <button onclick="postWall()">Publish Post</button>
+ <div id="wallPosts">Loading posts...</div>`;
+
+ wallUnsub=db.collection("wallPosts")
+ .orderBy("createdAt","desc").limit(50)
+ .onSnapshot(s=>{
+  const list=document.getElementById("wallPosts");
+  if(!list)return;
+  list.innerHTML="";
+  if(s.empty){list.textContent="No posts yet.";return;}
+
+  s.forEach(doc=>{
+   const p=doc.data();
+   const u=users.find(x=>x.uid===p.uid);
+   const item=document.createElement("div");
+   item.className="item";
+   item.innerHTML="<b>"+safe(u?.username||"Member")+"</b><p>"+safe(p.text)+"</p>";
+   list.appendChild(item);
+  });
+ },e=>toast("Wall error: "+e.message));
+}
+
+async function postWall(){
+ const input=document.getElementById("wallText");
+ const text=input.value.trim();
+ if(!text)return;
+ if(text.length>300){toast("Maximum 300 characters");return;}
+ if(/https?:\/\/|www\./i.test(text)){toast("Links are not allowed");return;}
+
+ try{
+  await db.collection("wallPosts").add({
+   uid:me.uid,
+   text:text,
+   createdAt:firebase.firestore.FieldValue.serverTimestamp()
+  });
+  input.value="";
+ }catch(e){toast("Post error: "+e.message);}
+}
+
+// NEWS - READ ONLY
+function renderNews(box){
+ box.innerHTML="<h3>Community News</h3><div id='newsList'>Loading news...</div>";
+
+ newsUnsub=db.collection("news")
+ .orderBy("createdAt","desc").limit(30)
+ .onSnapshot(s=>{
+  const list=document.getElementById("newsList");
+  if(!list)return;
+  list.innerHTML="";
+  if(s.empty){list.textContent="No news has been posted yet.";return;}
+
+  s.forEach(doc=>{
+   const n=doc.data();
+   const item=document.createElement("div");
+   item.className="item";
+   item.innerHTML="<b>"+safe(n.title||"Community News")+"</b><p>"+safe(n.text||"")+"</p>";
+   list.appendChild(item);
+  });
+ },e=>toast("News error: "+e.message));
+}
+
+// RANKING
+function renderRanking(box){
+ box.innerHTML="<h3>Member Ranking</h3><p class='muted'>Current role listing. Game scores, coins and XP rankings are not enabled.</p>";
+ const order=["Owner","Member"];
+ order.forEach(role=>{
+  const group=users.filter(u=>roleOf(u)===role);
+  if(!group.length)return;
+  const item=document.createElement("div");
+  item.className="item";
+  item.innerHTML="<b>"+role+"</b><br>"+group.map(u=>safe(u.username)).join(", ");
+  box.appendChild(item);
+ });
+}
+
+// MEMBERS
+function renderMembers(box){
+ box.innerHTML="<h3>All Members</h3>";
+ users.forEach(u=>{
+  const item=document.createElement("div");
+  item.className="item";
+  item.innerHTML="<b>"+safe(u.username)+"</b><p class='muted'>"+safe(roleOf(u))+"</p>";
+  const btn=document.createElement("button");
+  btn.textContent="View Profile";
+  btn.onclick=()=>openMember(u.uid);
+  item.appendChild(btn);
+  box.appendChild(item);
+ });
+}
+
+// GAMES
+function renderGames(box){
+ box.innerHTML=`
+ <h3>Games</h3>
+ <div class="card">
+  <h3>🎲 Roll the Dice</h3>
+  <p id="diceResult">Press the button to roll.</p>
+  <button onclick="rollDice()">Roll Dice</button>
+ </div>
+ <p class="muted">This is a fun game only. No coins or XP rewards are given.</p>`;
+}
+function rollDice(){
+ const n=Math.floor(Math.random()*6)+1;
+ document.getElementById("diceResult").textContent="You rolled "+n+" 🎲";
+}
+
+// YOUTUBE SONG SEARCH
+function renderYoutube(box){
+ box.innerHTML=`
+ <h3>YouTube Song Search</h3>
+ <p class="muted">Search for a song or singer on YouTube.</p>
+ <input id="songSearch" placeholder="Enter song name">
+ <button onclick="searchSong()">Search Songs</button>`;
+}
+function searchSong(){
+ const q=document.getElementById("songSearch").value.trim();
+ if(!q)return;
+ window.open("https://www.youtube.com/results?search_query="+encodeURIComponent(q),"_blank");
+}
+
+// THEMES
+function renderSettings(box){
+ box.innerHTML="<h3>Personal Themes</h3><p class='muted'>Theme is saved on this device for your account.</p>";
+ ["Ocean","Purple","Forest","Ruby","Dark","Golden"].forEach(t=>{
+  const btn=document.createElement("button");
+  btn.textContent=t;
+  btn.onclick=()=>setTheme(t);
+  box.appendChild(btn);
+ });
+}
+
+function setTheme(theme){
+ const colors={
+  Ocean:["#071426","#0b1e35","#1764c0"],
+  Purple:["#160e28","#281943","#7944bb"],
+  Forest:["#071c17","#103329","#21805c"],
+  Ruby:["#230d18","#351323","#a83258"],
+  Dark:["#101010","#202020","#444444"],
+  Golden:["#211a08","#352b11","#9a7419"]
+ };
+ const c=colors[theme];
+ if(!c)return;
+ document.body.style.background=c[0];
+ document.querySelectorAll(".panel,.main,header").forEach(x=>x.style.background=c[1]);
+ document.querySelectorAll("button").forEach(x=>x.style.background=c[2]);
+ localStorage.setItem("talktimeTheme_"+me.uid,theme);
+ toast(theme+" theme selected");
+}
 </script>
 </body>
 </html>
