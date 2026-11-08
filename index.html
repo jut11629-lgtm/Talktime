@@ -1,109 +1,129 @@
-
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>TalkTime Pakistan Chat</title>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<title>TalkTime</title>
 <style>
 *{box-sizing:border-box}
-body{margin:0;background:#e9edf2;font-family:Arial,sans-serif;color:#263238}
-header{background:#075e54;color:white;padding:12px 16px;display:flex;align-items:center;justify-content:space-between}
-header h2{margin:0;font-size:21px}
-button{border:0;border-radius:5px;padding:10px 14px;background:#087e70;color:white;font-weight:bold;cursor:pointer}
-input,textarea{width:100%;padding:11px;border:1px solid #ccd4dc;border-radius:6px;font-size:15px;margin:5px 0}
-#auth{max-width:400px;background:white;padding:22px;margin:45px auto;border-radius:10px}
-#app{display:none;max-width:1250px;margin:auto;padding:10px}
-.bar{background:#fff;padding:10px;margin-bottom:10px;border-radius:7px;display:flex;gap:7px;flex-wrap:wrap}
-.layout{display:grid;grid-template-columns:190px minmax(0,1fr) 190px;gap:10px}
-.panel{background:white;border-radius:7px;padding:12px;min-width:0}
-.room{display:block;width:100%;text-align:left;margin:5px 0;background:#edf3f1;color:#075e54}
-.room.active{background:#087e70;color:white}
-#messages{height:65vh;min-height:300px;overflow-y:auto;background:#f6f8fa;padding:10px;border:1px solid #e5e9ed;border-radius:6px}
-.msg{background:white;border:1px solid #e2e7eb;border-radius:7px;padding:9px;margin:7px 0;overflow-wrap:anywhere}
-.msg b{color:#087e70}
-.msg small{float:right;color:#89949e}
-.send{display:flex;gap:6px;margin-top:8px}
-.send input{margin:0}
-.member{padding:8px;border-bottom:1px solid #eee}
-.muted{font-size:12px;color:#78838f}
-@media(max-width:700px){
-.layout{grid-template-columns:1fr}
-#messages{height:55vh}
-}
+body{margin:0;background:#030d2c;color:white;font-family:Arial,sans-serif}
+header{height:60px;background:#061943;padding:15px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #233b72}
+.logo{font-size:22px;font-weight:bold}.logo span{color:#59c9ff}
+button,input,textarea{font:inherit}
+button{cursor:pointer;color:white;border:0}
+.auth{max-width:420px;margin:60px auto;padding:22px;background:#0c2052;border-radius:18px}
+.auth input,.field{width:100%;padding:13px;margin:7px 0;background:#071638;border:1px solid #314a80;border-radius:10px;color:white}
+.primary{width:100%;padding:13px;background:#315ff0;border-radius:10px;margin-top:10px}
+.link{background:none;color:#85d8ff;width:100%;padding:12px}
+#app{display:none}
+.layout{display:grid;grid-template-columns:60px 1fr 250px;min-height:calc(100vh - 116px)}
+.side{background:#041033;padding:12px 6px;display:flex;flex-direction:column;gap:10px;align-items:center}
+.side button{width:44px;height:44px;border-radius:13px;background:#10285c;font-size:21px}
+.center{min-width:0;background:#06143b;display:flex;flex-direction:column}
+.room{padding:13px;background:#081943;border-bottom:1px solid #233b72;display:flex;justify-content:space-between;align-items:center}
+select{background:#132b62;color:white;border:0;padding:9px;border-radius:18px}
+.chat{height:calc(100vh - 220px);min-height:300px;overflow:auto;padding:15px;background:radial-gradient(ellipse at bottom,#112451,#06143b)}
+.welcome{text-align:center;color:#aebbd8;margin:20px}
+.message{display:flex;gap:9px;margin:15px 0;align-items:flex-start}
+.avatar{width:40px;height:40px;flex-shrink:0;border-radius:50%;background:#24447e;border:2px solid #36bfe9;display:grid;place-items:center;font-weight:bold}
+.name{color:#55d5c5;font-weight:bold;margin-bottom:6px}
+.rank{color:#ffd45c;font-size:12px}
+.bubble{background:#172f68;padding:11px 14px;border-radius:5px 16px 16px;display:inline-block;overflow-wrap:anywhere;white-space:pre-wrap}
+.mine{flex-direction:row-reverse}
+.mine .bubble{background:#284ba2;border-radius:16px 5px 16px 16px}
+.mine .body{text-align:right}
+.composer{display:flex;gap:7px;padding:10px;background:#06163e;border-top:1px solid #233b72}
+.composer button{width:40px;border-radius:50%;background:#10285c;font-size:20px}
+.composer input{flex:1;min-width:0;border-radius:25px;padding:12px;background:#081638;border:1px solid #263e75;color:white}
+.composer .send{background:#315ff0}
+.members{background:#07183f;padding:13px;border-left:1px solid #233b72}
+.member{display:flex;gap:9px;align-items:center;padding:10px 3px;border-bottom:1px solid #1a2d5c}
+.member small{display:block;color:#ffd45c;margin-top:4px}
+footer{height:56px;background:#061943;display:flex;justify-content:space-between;align-items:center;padding:10px 18px}
+footer button{background:none;font-size:22px}
+.modal{display:none;position:fixed;inset:0;background:#000b;align-items:center;justify-content:center;padding:15px}
+.modal.show{display:flex}
+.box{width:min(100%,420px);max-height:85vh;overflow:auto;background:#0c2052;padding:20px;border:1px solid #385b9c;border-radius:18px}
+.close{float:right;background:#1a326a;border-radius:50%;padding:8px}
+.muted{color:#aebbd8;font-size:12px}
+@media(max-width:800px){.layout{grid-template-columns:52px 1fr}.members{display:none}.side{padding:10px 4px}.side button{width:42px;height:42px}.chat{height:calc(100dvh - 215px)}}
 </style>
 </head>
 <body>
-
 <header>
-<h2>🇵🇰 TalkTime</h2>
-<button id="logout" style="display:none" onclick="auth.signOut()">Logout</button>
+<div class="logo">TALK<span>TIME</span></div>
+<div>
+<button id="messagesBtn">✉</button>
+<button id="membersBtn">♙</button>
+<button id="notifyBtn">♧</button>
+<button id="profileBtn">👤</button>
+</div>
 </header>
 
-<div id="auth">
-<h2>Welcome to TalkTime</h2>
-<p class="muted">Join our Pakistani community chat</p>
-<input id="username" placeholder="Username (signup)" maxlength="20">
-<input id="email" type="email" placeholder="Email address">
-<input id="password" type="password" placeholder="Password">
-<button style="width:100%" onclick="signup()">Create Account</button>
-<button style="width:100%;margin-top:7px;background:#2457d6" onclick="login()">Login</button>
-<p id="status" class="muted"></p>
+<div id="auth" class="auth">
+<h2 id="authTitle">Welcome to TalkTime</h2>
+<p class="muted">Login or create your account</p>
+<form id="authForm">
+<input id="username" placeholder="Username (signup only)" maxlength="20">
+<input id="email" type="email" placeholder="Email address" required>
+<input id="password" type="password" placeholder="Password" minlength="6" required>
+<div id="error" style="color:#ff9aaf;font-size:13px"></div>
+<button class="primary" id="submit">Login</button>
+</form>
+<button class="link" id="switch">Create a new account</button>
 </div>
 
 <div id="app">
-<div class="bar">
-<button onclick="openRoom('main')">Main Chat</button>
-<button onclick="openRoom('lahore')">Lahore</button>
-<button onclick="openRoom('karachi')">Karachi</button>
-<button onclick="openRoom('islamabad')">Islamabad</button>
-<button onclick="openRoom('multan')">Multan</button>
-<button onclick="openRoom('peshawar')">Peshawar</button>
-<button onclick="openRoom('quetta')">Quetta</button>
-</div>
-
 <div class="layout">
-<aside class="panel">
-<h3>Chat Rooms</h3>
-<div id="roomButtons"></div>
-<hr>
-<h3>My Profile</h3>
-<div id="myName"></div>
-<textarea id="bio" rows="3" maxlength="160" placeholder="About me"></textarea>
-<button onclick="saveBio()">Save Bio</button>
-</aside>
-
-<main class="panel">
-<h3 id="roomTitle">Main Lobby</h3>
-<div id="messages">Loading chat...</div>
-<div style="margin-top:8px">
-<button onclick="addEmoji('😊')">😊</button>
-<button onclick="addEmoji('❤️')">❤️</button>
-<button onclick="addEmoji('😂')">😂</button>
-<button onclick="addEmoji('😍')">😍</button>
-<button onclick="addEmoji('🔥')">🔥</button>
-<button onclick="addEmoji('👍')">👍</button>
-</div>
-<div class="send">
-<input id="message" maxlength="1000" placeholder="Type your message..." onkeydown="if(event.key==='Enter')sendMessage()">
-<button onclick="sendMessage()">Send</button>
-</div>
-<p class="muted">Respect everyone. Do not share personal information.</p>
+<nav class="side">
+<button title="Chat">⌂</button>
+<button title="Activity">◔</button>
+<button title="News">▤</button>
+<button title="Ranks">♛</button>
+<button title="Help">?</button>
+<button title="Rooms" onclick="document.getElementById('room').focus()">#</button>
+</nav>
+<main class="center">
+<div class="room"><strong id="roomTitle">Main Lobby</strong>
+<select id="room">
+<option value="main">Main Lobby</option>
+<option value="lahore">Lahore</option>
+<option value="karachi">Karachi</option>
+<option value="islamabad">Islamabad</option>
+<option value="multan">Multan</option>
+<option value="peshawar">Peshawar</option>
+<option value="quetta">Quetta</option>
+</select></div>
+<div class="chat" id="chat"><div class="welcome">Welcome to TalkTime. Keep the chat friendly.</div></div>
+<form class="composer" id="messageForm">
+<button type="button" id="plus">＋</button>
+<button type="button" id="emoji">☺</button>
+<input id="message" maxlength="1000" placeholder="Type here..." autocomplete="off">
+<button class="send">➤</button>
+</form>
 </main>
-
-<aside class="panel">
-<h3>Members</h3>
-<div id="members">Loading...</div>
+<aside class="members">
+<strong>Members <span id="count" class="muted">0</span></strong>
+<div id="memberList"></div>
 </aside>
 </div>
+<footer><button id="music">▶</button><button id="menu">☰</button></footer>
 </div>
 
+<div class="modal" id="modal">
+<div class="box">
+<button class="close" onclick="closeModal()">✕</button>
+<h3 id="modalTitle">TalkTime</h3>
+<div id="modalBody"></div>
+</div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 <script>
 const firebaseConfig={
-apiKey:"AIzaSyDNrlP_auYAjDU6C43THL3cOvVqmQR1kYM",
+apiKey:"AIzaSyDNrlP_auYAjDU6C43THl3cOvVqmQR1kYM",
 authDomain:"talktime-70e88.firebaseapp.com",
 projectId:"talktime-70e88",
 storageBucket:"talktime-70e88.firebasestorage.app",
@@ -111,182 +131,81 @@ messagingSenderId:"356630061165",
 appId:"1:356630061165:web:156f9afef56c58d1881f64",
 measurementId:"G-VS2EHB4KM7"
 };
-
 firebase.initializeApp(firebaseConfig);
-const auth=firebase.auth();
-const db=firebase.firestore();
-
-let me=null;
-let myName="";
-let currentRoom="main";
-let stopChat=null;
-let stopMembers=null;
-
-const rooms={
-main:"Main Lobby",
-lahore:"Lahore",
-karachi:"Karachi",
-islamabad:"Islamabad",
-multan:"Multan",
-peshawar:"Peshawar",
-quetta:"Quetta"
+const auth=firebase.auth(),db=firebase.firestore();
+const OWNER_UID="RCRj1YJf0hSeZIPIzLgpJHQYHNR2";
+let signup=false,user=null,profile=null,room="main",msgStop=null,userStop=null;
+const $=id=>document.getElementById(id);
+function safe(s){return String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
+function initials(s){return (s||"TT").slice(0,2).toUpperCase()}
+function rank(uid){return uid===OWNER_UID?"👑 Owner":"Member"}
+function openModal(title,body){$("modalTitle").textContent=title;$("modalBody").innerHTML=body;$("modal").classList.add("show")}
+function closeModal(){$("modal").classList.remove("show")}
+$("switch").onclick=()=>{signup=!signup;$("authTitle").textContent=signup?"Create your TalkTime account":"Welcome to TalkTime";$("username").style.display=signup?"block":"none";$("username").required=signup;$("submit").textContent=signup?"Sign up":"Login";$("switch").textContent=signup?"I already have an account":"Create a new account";$("error").textContent=""};
+$("username").style.display="none";
+$("authForm").onsubmit=async e=>{
+e.preventDefault();$("error").textContent="";
+try{
+if(signup){
+let n=$("username").value.trim();
+if(n.length<3||n.length>20)throw Error("Username 3 se 20 characters ka hona chahiye.");
+let c=await auth.createUserWithEmailAndPassword($("email").value.trim(),$("password").value);
+await db.collection("users").doc(c.user.uid).set({username:n,bio:"",createdAt:firebase.firestore.FieldValue.serverTimestamp()});
+}else await auth.signInWithEmailAndPassword($("email").value.trim(),$("password").value);
+}catch(e){$("error").textContent=e.message}
 };
-
-document.getElementById("roomButtons").innerHTML=
-Object.entries(rooms).map(([id,name])=>
-`<button class="room" id="room-${id}" onclick="openRoom('${id}')">${name}</button>`
-).join("");
-
-function say(message){
-document.getElementById("status").textContent=message;
-}
-
-async function signup(){
-const name=document.getElementById("username").value.trim();
-const email=document.getElementById("email").value.trim();
-const pass=document.getElementById("password").value;
-if(name.length<3||name.length>20)return say("Username 3-20 characters hona chahiye.");
-if(!email||pass.length<6)return say("Email aur 6 character password enter karein.");
+auth.onAuthStateChanged(async u=>{
+user=u;
+if(!u){$("auth").style.display="block";$("app").style.display="none";if(msgStop)msgStop();if(userStop)userStop();return}
 try{
-const result=await auth.createUserWithEmailAndPassword(email,pass);
-await db.collection("users").doc(result.user.uid).set({
-username:name,bio:"",
-createdAt:firebase.firestore.FieldValue.serverTimestamp()
-});
-}catch(e){say(e.message)}
-}
-
-async function login(){
-try{
-await auth.signInWithEmailAndPassword(
-document.getElementById("email").value.trim(),
-document.getElementById("password").value
-);
-}catch(e){say(e.message)}
-}
-
-auth.onAuthStateChanged(async user=>{
-if(stopChat)stopChat();
-if(stopMembers)stopMembers();
-
-if(!user){
-me=null;
-document.getElementById("auth").style.display="block";
-document.getElementById("app").style.display="none";
-document.getElementById("logout").style.display="none";
-return;
-}
-
-me=user;
-try{
-const profile=await db.collection("users").doc(user.uid).get();
-if(!profile.exists){
-alert("Profile nahi mila.");
-await auth.signOut();
-return;
-}
-myName=profile.data().username;
-document.getElementById("myName").textContent=myName;
-document.getElementById("bio").value=profile.data().bio||"";
-document.getElementById("auth").style.display="none";
-document.getElementById("app").style.display="block";
-document.getElementById("logout").style.display="block";
-openRoom("main");
-loadMembers();
+let s=await db.collection("users").doc(u.uid).get();
+if(!s.exists)throw Error("Profile nahi mili. Sign out karke dobara signup karein.");
+profile=s.data();$("auth").style.display="none";$("app").style.display="block";
+$("profileBtn").textContent=initials(profile.username);
+listenUsers();listenMessages();
 }catch(e){alert(e.message)}
 });
-
-function openRoom(id){
-currentRoom=id;
-document.getElementById("roomTitle").textContent=rooms[id];
-Object.keys(rooms).forEach(r=>{
-document.getElementById("room-"+r).classList.toggle("active",r===id);
+function listenUsers(){
+if(userStop)userStop();
+userStop=db.collection("users").onSnapshot(s=>{
+let a=[];s.forEach(d=>a.push({uid:d.id,...d.data()}));
+a.sort((x,y)=>x.uid===OWNER_UID?-1:y.uid===OWNER_UID?1:(x.username||"").localeCompare(y.username||""));
+$("count").textContent=a.length;
+let html=a.map(x=>`<div class="member"><div class="avatar">${safe(initials(x.username))}</div><div><b>${safe(x.username)}</b><small>${safe(rank(x.uid))}</small></div></div>`).join("");
+$("memberList").innerHTML=html||"No members";
+},e=>console.log(e));
+}
+function listenMessages(){
+if(msgStop)msgStop();
+$("roomTitle").textContent=room==="main"?"Main Lobby":room[0].toUpperCase()+room.slice(1);
+msgStop=db.collection("rooms").doc(room).collection("messages").orderBy("createdAt","asc").limit(100).onSnapshot(s=>{
+let html="";
+if(s.empty)html='<div class="welcome">Room ready. Send the first message!</div>';
+s.forEach(d=>{
+let m=d.data(),mine=m.uid===user.uid;
+let t=m.createdAt&&m.createdAt.toDate?m.createdAt.toDate().toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"}):"";
+html+=`<div class="message ${mine?"mine":""}"><div class="avatar">${safe(initials(m.username))}</div><div class="body"><div class="name">${safe(m.username)} <span class="rank">${safe(rank(m.uid))}</span> <span class="muted">${safe(t)}</span></div><div class="bubble">${safe(m.text)}</div></div></div>`;
 });
-if(stopChat)stopChat();
-
-const box=document.getElementById("messages");
-box.textContent="Loading messages...";
-
-stopChat=db.collection("rooms").doc(id).collection("messages")
-.orderBy("createdAt","asc").limit(100)
-.onSnapshot(snapshot=>{
-box.innerHTML="";
-snapshot.forEach(doc=>{
-const data=doc.data();
-const div=document.createElement("div");
-div.className="msg";
-const name=document.createElement("b");
-name.textContent=data.username||"Member";
-const time=document.createElement("small");
-time.textContent=data.createdAt?.toDate?
-data.createdAt.toDate().toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"}):"";
-const text=document.createElement("div");
-text.textContent=data.text||"";
-div.append(name,time,text);
-box.appendChild(div);
-});
-box.scrollTop=box.scrollHeight;
-},error=>box.textContent="Chat error: "+error.message);
+$("chat").innerHTML=html;$("chat").scrollTop=$("chat").scrollHeight;
+},e=>{$("chat").innerHTML='<div class="welcome">Messages load nahi huay. Firebase rules check karein.</div>';console.log(e)});
 }
-
-async function sendMessage(){
-const input=document.getElementById("message");
-const text=input.value.trim();
-if(!text||!me)return;
-if(/https?:\/\/|www\./i.test(text)){
-alert("Public chat mein links allowed nahi hain.");
-return;
-}
-input.value="";
-try{
-await db.collection("rooms").doc(currentRoom).collection("messages").add({
-uid:me.uid,
-username:myName,
-text:text,
-createdAt:firebase.firestore.FieldValue.serverTimestamp()
-});
-}catch(e){
-input.value=text;
-alert("Message send error: "+e.message);
-}
-}
-
-function addEmoji(e){
-const input=document.getElementById("message");
-input.value+=e;
-input.focus();
-}
-
-async function saveBio(){
-try{
-await db.collection("users").doc(me.uid).update({
-bio:document.getElementById("bio").value.trim()
-});
-alert("Bio saved!");
-}catch(e){alert(e.message)}
-}
-
-function loadMembers(){
-stopMembers=db.collection("users").orderBy("createdAt","asc").limit(100)
-.onSnapshot(snapshot=>{
-const box=document.getElementById("members");
-box.innerHTML="";
-snapshot.forEach(doc=>{
-const data=doc.data();
-const div=document.createElement("div");
-div.className="member";
-const name=document.createElement("b");
-name.textContent="👤 "+(data.username||"Member");
-const bio=document.createElement("div");
-bio.className="muted";
-bio.textContent=data.bio||"TalkTime member";
-div.append(name,bio);
-box.appendChild(div);
-});
-},error=>{
-document.getElementById("members").textContent=error.message;
-});
-}
+$("room").onchange=e=>{room=e.target.value;listenMessages()};
+$("messageForm").onsubmit=async e=>{
+e.preventDefault();let text=$("message").value.trim();if(!text)return;
+if(/https?:\/\/|www\./i.test(text)){alert("External links allowed nahi hain.");return}
+$("message").value="";
+try{await db.collection("rooms").doc(room).collection("messages").add({uid:user.uid,username:profile.username,text,createdAt:firebase.firestore.FieldValue.serverTimestamp()})}
+catch(e){$("message").value=text;alert(e.message)}
+};
+$("emoji").onclick=()=>{$("message").value+=" 😊";$("message").focus()};
+$("plus").onclick=()=>openModal("More options","Photo uploads, stickers, YouTube sharing and microphone need extra Firebase setup and are not active yet.");
+$("profileBtn").onclick=()=>openModal("My Profile",`<div style="text-align:center"><div class="avatar" style="width:85px;height:85px;margin:auto;font-size:25px">${safe(initials(profile.username))}</div><h2>${safe(profile.username)}</h2><p>${safe(rank(user.uid))}</p></div><label class="muted">About me</label><textarea id="bio" class="field" maxlength="160">${safe(profile.bio||"")}</textarea><button class="primary" onclick="saveBio()">Save bio</button><button class="primary" onclick="auth.signOut()">Log out</button>`);
+window.saveBio=async()=>{try{let b=$("bio").value.trim();await db.collection("users").doc(user.uid).update({bio:b});profile.bio=b;alert("Bio saved");closeModal()}catch(e){alert(e.message)}};
+$("membersBtn").onclick=()=>openModal("Members",$("memberList").innerHTML||"No members");
+$("messagesBtn").onclick=()=>openModal("Messages","Private messages are not enabled yet. Public room chat is active.");
+$("notifyBtn").onclick=()=>openModal("Notifications","Live room messages are shown in the chat.");
+$("music").onclick=()=>openModal("Music","Web radio is not enabled yet.");
+$("menu").onclick=()=>$("profileBtn").click();
 </script>
 </body>
 </html>
