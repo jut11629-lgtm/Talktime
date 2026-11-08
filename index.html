@@ -3,328 +3,411 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>TalkTime 💜</title>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TalkTime - Purple Neon Chat</title>
+
 <style>
 *{box-sizing:border-box}
-body{margin:0;background:#100923;color:white;font-family:Arial,sans-serif}
-header{padding:17px;background:linear-gradient(100deg,#4b168c,#a21caf);font-size:23px;font-weight:bold;text-align:center;box-shadow:0 0 25px #a855f7}
-#login{max-width:400px;margin:60px auto;padding:25px;background:#211039;border:1px solid #a855f7;border-radius:18px}
-input,button{padding:12px;border-radius:10px;border:1px solid #8546bd;background:#190d2c;color:white;width:100%;margin:6px 0}
-button{background:linear-gradient(90deg,#7c3aed,#c026d3);cursor:pointer;font-weight:bold}
-#app{display:none}
-.layout{display:grid;grid-template-columns:180px 1fr 230px;gap:12px;padding:12px;height:calc(100vh - 65px)}
-.panel{background:#211039;border:1px solid #7736a8;border-radius:15px;padding:13px;box-shadow:0 0 13px #7028a455;overflow:auto}
-.menu button{margin:7px 0}
-.chat{display:flex;flex-direction:column;min-height:0}
-#messages{flex:1;overflow:auto;padding:10px}
-.msg{background:#32194c;border:1px solid #733c9c;padding:11px;border-radius:12px;margin:9px 0;overflow-wrap:anywhere}
-.msg strong{color:#e9a7ff}
-#members{overflow:auto}
-.member{padding:10px;margin:6px 0;background:#32194c;border-radius:10px;font-size:13px}
-.online{color:#4ade80}.offline{color:#999}
-#composer{display:flex;gap:5px}
-#composer input{flex:1;min-width:0}
-#composer button{width:75px}
-.stat{background:#32194c;padding:12px;border-radius:12px;margin:8px 0}
-.small{font-size:12px;color:#c9a9df}
-@media(max-width:750px){
-.layout{grid-template-columns:75px 1fr;height:calc(100vh - 65px)}
-#membersPanel{grid-column:1/3;max-height:180px}
-.menu button{font-size:10px;padding:8px 3px}
+body{
+ margin:0;background:#090617;color:#f7edff;
+ font-family:Arial,sans-serif;
+ background-image:radial-gradient(ellipse at top,#32105c 0%,#100922 48%,#070510 100%);
+ min-height:100vh
+}
+button,input,textarea{font:inherit}
+button{cursor:pointer}
+.app{max-width:1500px;margin:auto;padding:18px}
+header{
+ display:flex;justify-content:space-between;align-items:center;
+ padding:15px 20px;margin-bottom:16px;
+ background:#160d2b;border:1px solid #7135a0;
+ border-radius:17px;box-shadow:0 0 20px #8c31bd55
+}
+.logo{font-size:25px;font-weight:bold;color:#e8baff;text-shadow:0 0 15px #c35aff}
+.logo span{color:#a65cff}
+#account{font-size:13px;color:#d8b7ff}
+.layout{display:grid;grid-template-columns:190px minmax(300px,1fr) 260px;gap:15px}
+.panel{
+ background:#160f29eF;border:1px solid #63348b;
+ border-radius:17px;padding:15px;
+ box-shadow:0 0 18px #8429bd22
+}
+h2,h3{margin-top:0;color:#e8c3ff}
+.nav button,.action{
+ width:100%;padding:12px;margin:5px 0;border:1px solid #65338a;
+ border-radius:11px;background:#25143d;color:#f4dfff;text-align:left
+}
+.nav button:hover,.action:hover{background:#57258a;box-shadow:0 0 12px #bd56ff}
+.profile{text-align:center;margin-bottom:20px}
+.avatar{
+ width:65px;height:65px;border-radius:50%;margin:5px auto 10px;
+ display:grid;place-items:center;font-size:28px;
+ background:linear-gradient(135deg,#a23cff,#ff65c7);
+ box-shadow:0 0 18px #c35aff
+}
+.rank{color:#ffcf67;font-weight:bold;font-size:12px}
+.muted{color:#bda9d1;font-size:12px}
+#chatBox{
+ height:430px;overflow-y:auto;padding:12px;
+ background:#0d091a;border:1px solid #40235e;border-radius:13px;
+ margin-bottom:12px
+}
+.msg{padding:9px 11px;margin:9px 0;background:#211437;border-radius:12px;border-left:3px solid #bd61ff;overflow-wrap:anywhere}
+.msg .who{color:#e5b7ff;font-weight:bold;font-size:13px}
+.msg .time{color:#9b87b0;font-size:10px;float:right}
+.msg p{margin:7px 0 0}
+.compose{display:flex;gap:8px}
+input,textarea{
+ width:100%;padding:12px;color:white;background:#0d0919;
+ border:1px solid #69418a;border-radius:10px;outline:none
+}
+input:focus,textarea:focus{border-color:#d17aff}
+.primary{
+ padding:11px 16px;border:0;border-radius:10px;
+ color:white;background:linear-gradient(120deg,#8c32cf,#d33da8)
+}
+.member{display:flex;align-items:center;gap:9px;padding:9px 3px;border-bottom:1px solid #342148;font-size:13px}
+.dot{width:9px;height:9px;border-radius:50%;background:#39e88b}
+.offline{background:#777}
+.section{display:none}
+.section.active{display:block}
+.item{padding:11px;background:#211437;border-radius:10px;margin:9px 0;overflow-wrap:anywhere}
+#auth{
+ max-width:420px;margin:8vh auto;padding:25px;
+ background:#160f29;border:1px solid #8a43b6;border-radius:18px;
+ box-shadow:0 0 25px #a43bda55
+}
+#auth input{margin:7px 0}
+#status{color:#ffcf67;font-size:12px;margin-top:10px}
+.smallbtn{padding:7px 10px;background:#36204d;color:white;border:1px solid #8050a5;border-radius:8px}
+@media(max-width:850px){
+ .layout{grid-template-columns:1fr}
+ .nav{display:flex;flex-wrap:wrap;gap:5px}
+ .nav button{width:auto;flex:1;text-align:center}
+ #chatBox{height:48vh}
 }
 </style>
 </head>
+
 <body>
-<header>💜 TALK TIME 💜</header>
-
-<section id="login">
-<h2>Welcome to TalkTime</h2>
-<input id="email" type="email" placeholder="Email">
-<input id="password" type="password" placeholder="Password">
-<input id="username" placeholder="Username (signup only)">
-<button onclick="signup()">Create Account</button>
-<button onclick="login()">Login</button>
-<p id="error" class="small"></p>
-</section>
-
-<section id="app">
-<div class="layout">
-<aside class="panel menu">
-<h3>☰ MENU</h3>
-<button onclick="showPage('leaderboard')">🏆 Leaderboard</button>
-<button onclick="showPage('news')">📢 News</button>
-<button onclick="showPage('wall')">👥 Friend Wall</button>
-<button onclick="showPage('chat')">💬 Main Chat</button>
-<button onclick="logout()">Logout</button>
-</aside>
-
-<main class="panel chat">
-<div id="profile"></div>
-<div id="pageTitle"><h3>💬 Main Chat</h3></div>
-<div id="messages"></div>
-<div id="composer">
-<input id="message" placeholder="Write your message...">
-<button onclick="sendMessage()">Send</button>
+<div id="auth">
+ <div class="logo">✦ Talk<span>Time</span></div>
+ <h2>Welcome to TalkTime</h2>
+ <p class="muted">Sign in or create your account</p>
+ <input id="email" type="email" placeholder="Email address">
+ <input id="password" type="password" placeholder="Password">
+ <input id="username" placeholder="Your display name (signup only)">
+ <button class="primary" style="width:100%;margin-top:8px" onclick="signup()">Create Account</button>
+ <button class="smallbtn" style="width:100%;margin-top:8px" onclick="login()">Login</button>
+ <div id="status"></div>
 </div>
-</main>
 
-<aside class="panel" id="membersPanel">
-<h3>👥 MEMBERS</h3>
-<h4 class="online">🟢 ONLINE</h4>
-<div id="online"></div>
-<h4 class="offline">⚫ OFFLINE</h4>
-<div id="offline"></div>
-</aside>
+<div class="app" id="app" style="display:none">
+ <header>
+  <div class="logo">✦ Talk<span>Time</span></div>
+  <div id="account">Welcome</div>
+  <button class="smallbtn" onclick="logout()">Logout</button>
+ </header>
+
+ <div class="layout">
+  <aside class="panel">
+   <div class="profile">
+    <div class="avatar">👑</div>
+    <div id="myName">Muhamad Amir</div>
+    <div class="rank" id="myRank">OWNER</div>
+    <div class="muted" id="myStats">Coins: 0 · Ruby: 0</div>
+   </div>
+   <h3>Navigation</h3>
+   <div class="nav">
+    <button onclick="showPage('leaderboard')">🏆 Leaderboard</button>
+    <button onclick="showPage('news')">📰 News</button>
+    <button onclick="showPage('wall')">💜 Friend Wall</button>
+   </div>
+   <hr style="border-color:#38234d">
+   <h3>My Profile</h3>
+   <input id="newName" placeholder="Change display name">
+   <button class="action" onclick="saveName()">Save Name</button>
+   <p class="muted">More profile styles and features can be added later.</p>
+  </aside>
+
+  <main class="panel">
+   <section id="mainchat" class="section active">
+    <h2>💬 Main Chat</h2>
+    <div class="muted">Welcome to the TalkTime community</div>
+    <div id="chatBox"></div>
+    <div class="compose">
+     <input id="message" maxlength="1000" placeholder="Write a message...">
+     <button class="primary" onclick="sendMessage()">Send</button>
+    </div>
+   </section>
+
+   <section id="leaderboard" class="section">
+    <h2>🏆 Leaderboard</h2>
+    <div id="leaderList">Loading members...</div>
+   </section>
+
+   <section id="news" class="section">
+    <h2>📰 TalkTime News</h2>
+    <div id="newsList">Loading news...</div>
+    <div id="newsAdmin" style="display:none">
+     <textarea id="newsText" placeholder="Write news..." rows="3"></textarea>
+     <button class="primary" onclick="postNews()">Publish News</button>
+    </div>
+   </section>
+
+   <section id="wall" class="section">
+    <h2>💜 Friend Wall</h2>
+    <textarea id="wallText" rows="3" placeholder="Write on the wall..."></textarea>
+    <button class="primary" onclick="postWall()">Post</button>
+    <div id="wallList">Loading posts...</div>
+   </section>
+  </main>
+
+  <aside class="panel">
+   <h3>🟢 Online Members</h3>
+   <div id="onlineList"></div>
+   <h3 style="margin-top:20px">⚫ Offline Members</h3>
+   <div id="offlineList"></div>
+  </aside>
+ </div>
 </div>
-</section>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 
 <script>
 const firebaseConfig = {
-  apiKey: "PASTE_YOUR_API_KEY",
-  authDomain: "talktime-70e88.firebaseapp.com",
-  projectId: "talktime-70e88",
-  storageBucket: "talktime-70e88.firebasestorage.app",
-  messagingSenderId: "PASTE_YOUR_MESSAGING_SENDER_ID",
-  appId: "PASTE_YOUR_APP_ID"
+ apiKey: "AIzaSyDNrlP_auYAjDU6C43THl3cOvVqmQR1kYM",
+ authDomain: "talktime-70e88.firebaseapp.com",
+ projectId: "talktime-70e88",
+ storageBucket: "talktime-70e88.firebasestorage.app",
+ messagingSenderId: "356630061165",
+ appId: "1:356630061165:web:156f9afef56c58d1881f64",
+ measurementId: "G-VS2EHB4KM7"
 };
 
 firebase.initializeApp(firebaseConfig);
-const auth=firebase.auth();
-const db=firebase.firestore();
+const auth = firebase.auth();
+const db = firebase.firestore();
 
-const OWNER="RCRj1YJf0hSeZIPIzLgpJHQYHNR2";
-let me=null;
-let userData=null;
-let stopMessages=null;
-let stopUsers=null;
-let stopPage=null;
+const OWNER_UID = "RCRj1YJf0hSeZIPIzLgpJHQYHNR2";
+let currentUser = null;
+let profile = null;
+let unsubMessages = null;
+let unsubUsers = null;
+let unsubNews = null;
+let unsubWall = null;
 
-function errorMsg(e){
- document.getElementById("error").innerText=e.message;
-}
+const $ = id => document.getElementById(id);
+function safeText(el,value){el.textContent=value ?? ""}
+function errorText(e){$("status").textContent=e.message || "Something went wrong";}
 
 async function signup(){
  try{
-  const name=document.getElementById("username").value.trim();
-  if(!name) throw Error("Enter username");
-  const c=await auth.createUserWithEmailAndPassword(
-   email.value,password.value
-  );
-  await db.collection("users").doc(c.user.uid).set({
-   username:name,rank:"Member",coins:0,ruby:0,level:1,
-   lastSeen:firebase.firestore.FieldValue.serverTimestamp()
+  const email=$("email").value.trim();
+  const password=$("password").value;
+  const name=$("username").value.trim();
+  if(!name) throw Error("Please enter your display name");
+  if(name.length>30) throw Error("Name is too long");
+  const result=await auth.createUserWithEmailAndPassword(email,password);
+  await db.collection("users").doc(result.user.uid).set({
+   name:name,username:name,rank:"Member",coins:0,ruby:0,level:1,
+   online:true,status:"Online",createdAt:firebase.firestore.FieldValue.serverTimestamp()
   });
- }catch(e){errorMsg(e)}
+ }catch(e){errorText(e);}
 }
 
 async function login(){
  try{
-  await auth.signInWithEmailAndPassword(email.value,password.value);
- }catch(e){errorMsg(e)}
+  await auth.signInWithEmailAndPassword(
+   $("email").value.trim(),$("password").value
+  );
+ }catch(e){errorText(e);}
 }
 
 async function logout(){
- if(me){
-  await db.collection("users").doc(me.uid).update({
-   lastSeen:firebase.firestore.FieldValue.serverTimestamp()
-  }).catch(()=>{});
+ if(currentUser){
+  try{
+   await db.collection("users").doc(currentUser.uid).update({
+    online:false,status:"Offline"
+   });
+  }catch(e){}
  }
  await auth.signOut();
 }
 
 auth.onAuthStateChanged(async user=>{
  if(!user){
-  me=null;
-  document.getElementById("login").style.display="block";
-  document.getElementById("app").style.display="none";
-  if(stopMessages)stopMessages();
-  if(stopUsers)stopUsers();
-  if(stopPage)stopPage();
+  currentUser=null;
+  $("auth").style.display="block";
+  $("app").style.display="none";
+  stopListeners();
   return;
  }
- me=user;
+ currentUser=user;
+ $("auth").style.display="none";
+ $("app").style.display="block";
  try{
-  const ref=db.collection("users").doc(me.uid);
+  const ref=db.collection("users").doc(user.uid);
   let snap=await ref.get();
-
   if(!snap.exists){
    await ref.set({
-    username:me.email.split("@")[0],
-    rank:"Member",coins:0,ruby:0,level:1
+    name:user.email.split("@")[0],
+    username:user.email.split("@")[0],
+    rank:"Member",coins:0,ruby:0,level:1,
+    online:true,status:"Online"
    });
+   snap=await ref.get();
   }
-
-  if(me.uid===OWNER){
-   await ref.set({
-    rank:"Owner",
-    coins:1000000000,
-    ruby:1000000000,
-    level:400
-   },{merge:true});
-  }
-
-  userData=(await ref.get()).data();
-  document.getElementById("login").style.display="none";
-  document.getElementById("app").style.display="block";
-  showProfile();
-  listenUsers();
-  listenMessages();
- }catch(e){errorMsg(e)}
+  profile=snap.data();
+  await ref.update({online:true,status:"Online"});
+  updateProfile();
+  startListeners();
+ }catch(e){
+  alert("Profile error: "+e.message);
+ }
 });
 
-function showProfile(){
- const owner=me.uid===OWNER;
- document.getElementById("profile").innerHTML=`
- <div class="stat">
- <b>${escapeHTML(userData.username||"User")}</b>
- ${owner?"👑 OWNER":escapeHTML(userData.rank||"Member")}
- <p>🪙 Coins: ${Number(userData.coins||0).toLocaleString()}</p>
- <p>💎 Ruby: ${Number(userData.ruby||0).toLocaleString()}</p>
- <p>⭐ Level: ${userData.level||1}</p>
- </div>`;
+function displayRank(uid,rank){
+ if(uid===OWNER_UID)return "👑 OWNER";
+ return rank || "Member";
 }
 
-function escapeHTML(s){
- return String(s).replace(/[&<>"']/g,c=>({
- "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
- })[c]);
+function updateProfile(){
+ const name=profile.name || profile.username || "Member";
+ $("myName").textContent=name;
+ $("myRank").textContent=displayRank(currentUser.uid,profile.rank);
+ $("myStats").textContent="Coins: "+(profile.coins||0)+" · Ruby: "+(profile.ruby||0);
+ $("account").textContent=name;
+ $("newsAdmin").style.display=
+  (currentUser.uid===OWNER_UID || ["Admin","Super Admin"].includes(profile.rank))
+  ?"block":"none";
+}
+
+async function saveName(){
+ const name=$("newName").value.trim();
+ if(!name || name.length>30)return alert("Enter a name up to 30 characters");
+ try{
+  await db.collection("users").doc(currentUser.uid).update({
+   name:name,username:name
+  });
+  profile.name=name;
+  updateProfile();
+  $("newName").value="";
+ }catch(e){alert(e.message);}
+}
+
+function startListeners(){
+ stopListeners();
+
+ unsubMessages=db.collection("rooms").doc("main")
+  .collection("messages").orderBy("createdAt","asc").limitToLast(100)
+  .onSnapshot(snapshot=>{
+   const box=$("chatBox");box.replaceChildren();
+   snapshot.forEach(doc=>{
+    const m=doc.data();
+    const item=document.createElement("div");item.className="msg";
+    const who=document.createElement("div");who.className="who";
+    who.textContent=(m.name||"Member")+" · "+displayRank(m.uid,m.rank);
+    const p=document.createElement("p");p.textContent=m.text||"";
+    item.append(who,p);box.append(item);
+   });
+   box.scrollTop=box.scrollHeight;
+  },e=>console.log(e));
+
+ unsubUsers=db.collection("users").onSnapshot(snapshot=>{
+  const online=$("onlineList"),offline=$("offlineList"),leader=$("leaderList");
+  online.replaceChildren();offline.replaceChildren();leader.replaceChildren();
+  const users=[];
+  snapshot.forEach(doc=>users.push({uid:doc.id,...doc.data()}));
+  users.sort((a,b)=>(b.coins||0)-(a.coins||0));
+  users.forEach(u=>{
+   const row=document.createElement("div");row.className="member";
+   const dot=document.createElement("span");
+   dot.className="dot "+(u.online?"":"offline");
+   const label=document.createElement("span");
+   label.textContent=(u.name||u.username||"Member")+" · "+displayRank(u.uid,u.rank);
+   row.append(dot,label);
+   (u.online?online:offline).append(row);
+
+   const l=document.createElement("div");l.className="item";
+   l.textContent="👤 "+(u.name||"Member")+" — "+displayRank(u.uid,u.rank)+" | 🪙 "+(u.coins||0)+" | ❤️ "+(u.likes||0);
+   leader.append(l);
+  });
+  if(!users.length)leader.textContent="No members yet";
+ },e=>console.log(e));
+
+ unsubNews=db.collection("news").orderBy("createdAt","desc")
+  .onSnapshot(s=>{
+   const box=$("newsList");box.replaceChildren();
+   s.forEach(d=>{
+    const el=document.createElement("div");el.className="item";
+    el.textContent=d.data().text||"";
+    box.append(el);
+   });
+  },e=>console.log(e));
+
+ unsubWall=db.collection("wallPosts").orderBy("createdAt","desc")
+  .onSnapshot(s=>{
+   const box=$("wallList");box.replaceChildren();
+   s.forEach(d=>{
+    const el=document.createElement("div");el.className="item";
+    el.textContent=(d.data().name||"Member")+": "+(d.data().text||"");
+    box.append(el);
+   });
+  },e=>console.log(e));
+}
+
+function stopListeners(){
+ [unsubMessages,unsubUsers,unsubNews,unsubWall].forEach(fn=>{if(fn)fn();});
+ unsubMessages=unsubUsers=unsubNews=unsubWall=null;
 }
 
 async function sendMessage(){
- const input=document.getElementById("message");
- const text=input.value.trim();
- if(!text||!me)return;
+ const text=$("message").value.trim();
+ if(!text)return;
+ if(text.length>1000)return alert("Message too long");
  try{
-  await db.collection("rooms").doc("main")
-   .collection("messages").add({
-    uid:me.uid,
-    username:userData.username||"User",
-    rank:userData.rank||"Member",
-    text:text,
-    createdAt:firebase.firestore.FieldValue.serverTimestamp()
-   });
-  input.value="";
- }catch(e){alert(e.message)}
+  await db.collection("rooms").doc("main").collection("messages").add({
+   uid:currentUser.uid,
+   name:profile.name||profile.username||"Member",
+   rank:profile.rank||"Member",
+   text:text,
+   createdAt:firebase.firestore.FieldValue.serverTimestamp()
+  });
+  $("message").value="";
+ }catch(e){alert(e.message);}
 }
 
-document.getElementById("message").addEventListener("keydown",e=>{
- if(e.key==="Enter")sendMessage();
-});
-
-function listenMessages(){
- if(stopMessages)stopMessages();
- stopMessages=db.collection("rooms").doc("main")
- .collection("messages").orderBy("createdAt","asc").limit(100)
- .onSnapshot(snapshot=>{
-  const box=document.getElementById("messages");
-  box.innerHTML="";
-  snapshot.forEach(doc=>{
-   const m=doc.data();
-   const div=document.createElement("div");
-   div.className="msg";
-   const name=document.createElement("strong");
-   name.textContent=(m.username||"User")+" ";
-   if(m.uid===OWNER)name.textContent+="👑 OWNER";
-   const content=document.createElement("div");
-   content.textContent=m.text||"";
-   div.append(name,content);
-   box.appendChild(div);
+async function postNews(){
+ const text=$("newsText").value.trim();
+ if(!text)return;
+ try{
+  await db.collection("news").add({
+   text:text,uid:currentUser.uid,
+   createdAt:firebase.firestore.FieldValue.serverTimestamp()
   });
-  box.scrollTop=box.scrollHeight;
- });
+  $("newsText").value="";
+ }catch(e){alert(e.message);}
 }
 
-function listenUsers(){
- if(stopUsers)stopUsers();
- stopUsers=db.collection("users").onSnapshot(snapshot=>{
-  const online=document.getElementById("online");
-  const offline=document.getElementById("offline");
-  online.innerHTML="";
-  offline.innerHTML="";
-  snapshot.forEach(doc=>{
-   const u=doc.data();
-   const isOnline=u.lastSeen &&
-    Date.now()-u.lastSeen.toMillis()<120000;
-   const div=document.createElement("div");
-   div.className="member";
-   div.textContent=(isOnline?"🟢 ":"⚫ ")+
-    (u.username||"User")+" · "+(u.rank||"Member");
-   (isOnline?online:offline).appendChild(div);
+async function postWall(){
+ const text=$("wallText").value.trim();
+ if(!text)return;
+ try{
+  await db.collection("wallPosts").add({
+   text:text,uid:currentUser.uid,
+   name:profile.name||profile.username||"Member",
+   createdAt:firebase.firestore.FieldValue.serverTimestamp()
   });
- });
+  $("wallText").value="";
+ }catch(e){alert(e.message);}
 }
 
-async function showPage(page){
- const title=document.getElementById("pageTitle");
- const messages=document.getElementById("messages");
- document.getElementById("composer").style.display=
-  page==="chat"?"flex":"none";
- if(stopPage){stopPage();stopPage=null}
- messages.innerHTML="";
-
- if(page==="chat"){
-  title.innerHTML="<h3>💬 Main Chat</h3>";
-  listenMessages();
- }
- if(page==="leaderboard"){
-  title.innerHTML="<h3>🏆 Leaderboard</h3>";
-  const snap=await db.collection("users").get();
-  const users=snap.docs.map(d=>({id:d.id,...d.data()}));
-  users.sort((a,b)=>(b.coins||0)-(a.coins||0));
-  messages.innerHTML="<h3>🪙 Coin Ranking</h3>";
-  users.forEach((u,i)=>{
-   const d=document.createElement("div");
-   d.className="msg";
-   d.textContent=`${i+1}. ${u.username||"User"} — ${Number(u.coins||0).toLocaleString()} coins`;
-   messages.appendChild(d);
-  });
-  const likes=[];
-  for(const u of users){
-   const l=await db.collection("users").doc(u.id)
-    .collection("likes").get();
-   likes.push({name:u.username||"User",count:l.size});
-  }
-  likes.sort((a,b)=>b.count-a.count);
-  const h=document.createElement("h3");
-  h.textContent="❤️ Profile Likes Ranking";
-  messages.appendChild(h);
-  likes.forEach((u,i)=>{
-   const d=document.createElement("div");
-   d.className="msg";
-   d.textContent=`${i+1}. ${u.name} — ${u.count} likes`;
-   messages.appendChild(d);
-  });
- }
- if(page==="news"){
-  title.innerHTML="<h3>📢 News</h3>";
-  stopPage=db.collection("news").orderBy("createdAt","desc")
-   .onSnapshot(s=>{
-    messages.innerHTML="";
-    s.forEach(doc=>{
-     const d=document.createElement("div");
-     d.className="msg";
-     d.textContent=doc.data().text||"";
-     messages.appendChild(d);
-    });
-   });
- }
- if(page==="wall"){
-  title.innerHTML="<h3>👥 Friend Wall</h3>";
-  stopPage=db.collection("wallPosts").orderBy("createdAt","desc")
-   .onSnapshot(s=>{
-    messages.innerHTML="";
-    s.forEach(doc=>{
-     const d=document.createElement("div");
-     d.className="msg";
-     d.textContent=doc.data().text||"";
-     messages.appendChild(d);
-    });
-   });
- }
+function showPage(page){
+ document.querySelectorAll(".section").forEach(s=>s.classList.remove("active"));
+ $(page).classList.add("active");
 }
 </script>
 </body>
