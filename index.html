@@ -3,72 +3,386 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>TalkTime - Chat Together</title>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TalkTime Neon</title>
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore-compat.js"></script>
 <style>
-:root{--bg:#07091e;--panel:#101333;--panel2:#171a45;--line:#5820bd;--purple:#a000ff;--pink:#ed35ff;--blue:#167cff;--text:#f5f2ff;--muted:#b8b1e8}
+:root{--bg:#080817;--panel:#111126;--panel2:#191735;--line:#38265f;--purple:#a45cff;--pink:#df5cff;--text:#f5efff;--muted:#a69cbe;--green:#45e6a4}
 *{box-sizing:border-box}
-body{margin:0;background:radial-gradient(ellipse at 50% 0%,#211052 0%,#0b0b25 45%,#050718 100%);color:var(--text);font-family:Arial,Helvetica,sans-serif}
-button,input,textarea,select{font:inherit}
-button{cursor:pointer;color:white;border:1px solid #722bdb;background:linear-gradient(120deg,#8d00ed,#3d39d7);border-radius:12px;padding:11px 15px;font-weight:bold;box-shadow:0 0 12px #a000ff44}
-button:hover{filter:brightness(1.2)}
-input,textarea,select{background:#090d2a;color:white;border:1px solid #4c318e;border-radius:10px;padding:12px;width:100%;outline:none}
-input:focus,textarea:focus{border-color:#c34cff;box-shadow:0 0 10px #a000ff55}
-#auth{width:min(420px,92%);margin:9vh auto;background:#101333;border:1px solid #8538e8;border-radius:22px;padding:25px;box-shadow:0 0 35px #8d00ed55}
-#auth h1{color:#d4a0ff;font-size:32px;margin:0}
-#auth p{color:var(--muted)}
-#auth input{margin:7px 0}
-#auth .actions{display:flex;gap:9px;margin-top:10px}
-#auth .actions button{flex:1}
-#authStatus{font-size:13px;overflow-wrap:anywhere}
-#app{display:none;min-height:100vh}
-.topbar{height:94px;display:flex;align-items:center;gap:18px;padding:10px 22px;background:#080a22;border-bottom:1px solid #6723bd;box-shadow:0 5px 25px #5b00bb33}
-.logo{min-width:255px;font-size:34px;font-weight:900;color:#d9a2ff;text-shadow:0 0 14px #b000ff}
-.logo small{display:block;font-size:13px;color:#d8c9ff;font-weight:normal;text-shadow:none;margin-top:3px}
-.welcome{flex:1;text-align:center;border:1px solid #8034ec;border-radius:28px;padding:13px;background:#171044;box-shadow:0 0 18px #8300ff66;color:#eee0ff}
-.topright{display:flex;align-items:center;gap:12px}
-.iconbtn{font-size:20px;padding:12px;background:#17123b}
-.userTop{display:flex;align-items:center;gap:10px;background:#111333;border:1px solid #6c2ac6;padding:8px 12px;border-radius:30px;min-width:190px}
-.avatar{width:46px;height:46px;border-radius:50%;object-fit:cover;border:2px solid #b447ff;background:#261a55;display:grid;place-items:center;font-size:23px;flex-shrink:0}
-.owner{background:#7900dc;color:white;border-radius:18px;padding:4px 9px;font-size:11px;white-space:nowrap}
-.memberRank{background:#0759b8;color:white;border-radius:18px;padding:4px 9px;font-size:11px}
-.onlineDot{display:inline-block;width:9px;height:9px;border-radius:50%;background:#00e777;margin-right:6px;box-shadow:0 0 8px #00e777}
-.layout{display:grid;grid-template-columns:300px minmax(400px,1fr) 325px;gap:12px;padding:14px;max-width:1700px;margin:auto}
-.panel{background:linear-gradient(150deg,#111333f5,#0a0d29f5);border:1px solid #7130cb;border-radius:17px;box-shadow:0 0 17px #7100d733;min-width:0}
-.left{padding:12px;align-self:start}
-.profileCard{display:flex;align-items:center;gap:12px;padding:12px;background:linear-gradient(120deg,#27105a,#111536);border:1px solid #8d38e7;border-radius:15px;margin-bottom:12px}
-.profileCard .avatar{width:76px;height:76px}
-.profileName{font-size:17px;font-weight:bold;overflow-wrap:anywhere}
-.rankLine{margin-top:8px}
-.nav button{width:100%;display:flex;align-items:center;gap:13px;text-align:left;margin:5px 0;background:transparent;border:0;box-shadow:none;border-bottom:1px solid #29204e;border-radius:8px;font-size:16px;padding:13px}
-.nav button.active,.nav button:hover{background:linear-gradient(100deg,#9400f4,#174ee6);box-shadow:0 0 17px #9c00ff99}
-.nav button span:first-child{font-size:23px;width:30px;text-align:center}
-.miniCard{padding:12px;margin-top:12px;border:1px solid #7a28d5;border-radius:14px;background:#111438;text-align:center;color:#d7b6ff}
-.center{display:flex;flex-direction:column;min-height:calc(100vh - 122px);overflow:hidden}
-.chatHead{display:flex;align-items:center;justify-content:space-between;padding:16px 18px;border-bottom:1px solid #46218b}
-.chatHead h2{margin:0;font-size:25px}
-.chatHead p{margin:5px 0 0;color:var(--muted);font-size:13px}
-.onlineCount{border:1px solid #6323bd;border-radius:25px;padding:10px 14px;color:#d9c4ff;white-space:nowrap}
-.newsBanner{margin:10px 14px;padding:12px;border:1px solid #7e2bdd;border-radius:11px;background:linear-gradient(100deg,#351078,#151747);font-size:14px}
-#messages{flex:1;min-height:340px;max-height:calc(100vh - 360px);overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:12px}
-.msg{display:flex;gap:10px;align-items:flex-start;max-width:100%}
-.msg .avatar{width:52px;height:52px}
-.bubble{min-width:0;max-width:calc(100% - 60px);padding:11px 14px;background:linear-gradient(120deg,#171a48,#20114c);border:1px solid #4e258f;border-radius:16px;overflow-wrap:anywhere;box-shadow:0 0 9px #6200bd22}
-.msgTop{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:7px}
-.msgName{font-weight:bold;color:#e5b8ff}
-.msgTime{font-size:11px;color:#aaa0d5;margin-left:auto}
-.msgText{line-height:1.45;white-space:pre-wrap}
-.watermark{position:absolute;right:7%;top:38%;font-size:clamp(38px,7vw,86px);font-style:italic;font-weight:bold;color:#7b00c9;opacity:.12;pointer-events:none;transform:rotate(-9deg)}
-.chatBody{position:relative;display:flex;flex:1;min-height:0}
-.composer{display:flex;gap:8px;align-items:center;padding:12px;border-top:1px solid #4d218b;background:#0c0e2a}
-.composer input{flex:1;border-radius:25px;padding:15px}
-.composer button{padding:13px 18px}
-.toolbtn{font-size:20px;background:#201247;padding:10px}
-.right{padding:12px;align-self:start}
-.sideTitle{font-size:18px;font-weight:bold;padding:8px 3px 13px;border-bottom:1px solid #42206e;margin-bottom:7px}
-.memberRow{display:flex;align-items:center;gap:9px;padding:9px 2px;border-bottom:1px solid #29204c;min-width:0}
-.memberRow .avatar{width:38px;height:38px;font-size:18px}
-.memberName{font-size:13px;overflow-wrap:anywhere;
+html,body{margin:0;width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(--text);font-family:Arial,sans-serif}
+body{background:radial-gradient(ellipse at 50% 40%,#251044 0%,#0c0b20 52%,#050510 100%)}
+button,input{font:inherit}
+button{cursor:pointer}
+#app{height:100dvh;width:100%;display:grid;grid-template-columns:215px minmax(260px,1fr) 245px;gap:12px;padding:12px;min-height:0}
+.panel{background:linear-gradient(160deg,rgba(23,20,49,.97),rgba(10,11,28,.98));border:1px solid var(--line);border-radius:17px;box-shadow:0 0 22px #8c3cff16,inset 0 0 20px #8c3cff08;min-height:0}
+.sidebar{padding:17px 12px;display:flex;flex-direction:column;gap:15px}
+.brand{display:flex;align-items:center;gap:11px;padding:4px 5px 17px;border-bottom:1px solid #30265c}
+.logo{width:43px;height:43px;border-radius:14px;display:grid;place-items:center;font-weight:900;font-size:20px;background:linear-gradient(135deg,#b35cff,#5520a5);box-shadow:0 0 20px #a855f7a0;color:white}
+.brandname{font-size:19px;font-weight:900;letter-spacing:1px}
+.brandname span{color:#c084fc}
+.tag{font-size:9px;color:#a99bc9;letter-spacing:2px;margin-top:4px}
+.navtitle{font-size:10px;letter-spacing:2px;color:#8278a7;padding:5px 9px}
+.nav{display:flex;flex-direction:column;gap:6px}
+.nav button{border:1px solid transparent;background:transparent;color:#c5bddf;text-align:left;padding:11px 12px;border-radius:10px;font-size:13px;display:flex;gap:12px;align-items:center}
+.nav button:hover,.nav button.active{background:linear-gradient(90deg,#7138bd55,#3b1b6b55);border-color:#7441ad;color:white;box-shadow:inset 0 0 15px #a855f722}
+.nav .ico{width:18px;text-align:center;font-size:16px}
+.sidebottom{margin-top:auto;border:1px solid #38265f;background:#17142d;border-radius:12px;padding:12px}
+.sidebottom small{color:var(--muted);font-size:10px}
+.sidebottom strong{display:block;margin-top:5px;font-size:12px}
+.center{display:flex;flex-direction:column;overflow:hidden;min-width:0}
+.topbar{height:66px;flex-shrink:0;display:flex;align-items:center;justify-content:space-between;padding:0 18px;border-bottom:1px solid #30265c}
+.roomtitle{font-size:17px;font-weight:800}
+.roomsub{font-size:10px;color:var(--muted);margin-top:4px}
+.topactions{display:flex;align-items:center;gap:8px}
+.topbtn{background:#21183c;border:1px solid #48316c;color:white;border-radius:10px;padding:9px 11px}
+.topbtn:hover{border-color:var(--purple)}
+.profilemini{font-size:12px;color:#d9cafa}
+.chatheading{padding:13px 18px 10px;display:flex;justify-content:space-between;align-items:center}
+.chatheading h2{font-size:15px;margin:0}
+.live{font-size:10px;color:var(--green);letter-spacing:1px}
+.messages{flex:1;min-height:0;overflow-y:auto;padding:12px 18px;display:flex;flex-direction:column;gap:11px;scrollbar-width:thin;scrollbar-color:#7041a5 transparent}
+.msg{display:flex;gap:10px;align-items:flex-start;max-width:90%}
+.avatar{width:34px;height:34px;flex-shrink:0;border-radius:11px;background:linear-gradient(135deg,#a855f7,#46218c);display:grid;place-items:center;font-weight:bold;color:white}
+.msgbody{background:#191631;border:1px solid #302653;border-radius:4px 13px 13px 13px;padding:9px 12px;min-width:80px}
+.msghead{display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin-bottom:5px}
+.msgname{font-size:12px;font-weight:bold;color:#d7baff}
+.ownerbadge{font-size:9px;color:#fff;background:linear-gradient(90deg,#8e35d9,#d14edc);padding:3px 6px;border-radius:5px;letter-spacing:.5px}
+.msgtime{font-size:9px;color:#837a9e}
+.msgtext{font-size:13px;line-height:1.45;overflow-wrap:anywhere;color:#eee8fa}
+.systemmsg{text-align:center;color:#9284b5;font-size:11px;padding:8px}
+.composer{padding:13px 16px 15px;border-top:1px solid #30265c;display:flex;gap:9px;flex-shrink:0}
+.composer input{flex:1;min-width:0;background:#0d0d20;border:1px solid #403064;border-radius:12px;padding:13px;color:white;outline:none}
+.composer input:focus{border-color:var(--purple);box-shadow:0 0 12px #a855f733}
+.send{border:0;border-radius:12px;padding:0 20px;color:white;font-weight:bold;background:linear-gradient(135deg,#a855f7,#7135c4);box-shadow:0 0 15px #a855f755}
+.right{display:flex;flex-direction:column;overflow:hidden}
+.righthead{padding:18px 15px;border-bottom:1px solid #30265c}
+.righthead h3{font-size:15px;margin:0}
+.righthead p{font-size:10px;color:var(--muted);margin:6px 0 0}
+.membercount{color:#c58aff}
+.memberlist{padding:10px;overflow-y:auto;min-height:0;scrollbar-width:thin;scrollbar-color:#7041a5 transparent}
+.member{display:flex;align-items:center;gap:9px;padding:10px 7px;border-radius:10px}
+.member:hover{background:#21183b}
+.member .avatar{width:32px;height:32px;border-radius:50%}
+.memberinfo{min-width:0;flex:1}
+.membername{font-size:12px;font-weight:bold;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.memberstatus{font-size:10px;color:var(--green);margin-top:4px}
+.empty{color:var(--muted);font-size:12px;text-align:center;padding:25px 8px}
+#authScreen{position:fixed;inset:0;z-index:20;display:grid;place-items:center;background:radial-gradient(ellipse at center,#28134b,#080817 70%);padding:18px}
+.authbox{width:min(390px,100%);padding:27px;border:1px solid #583783;border-radius:20px;background:#111126;box-shadow:0 0 40px #a855f733}
+.authbrand{text-align:center;margin-bottom:23px}
+.authbrand .logo{margin:auto;width:58px;height:58px;font-size:24px}
+.authbrand h1{font-size:23px;margin:12px 0 5px}
+.authbrand p{font-size:11px;color:var(--muted)}
+.authbox input{width:100%;padding:13px;margin:7px 0;background:#09091a;border:1px solid #403064;border-radius:10px;color:white;outline:none}
+.authbox button{width:100%;padding:13px;margin-top:9px;border:0;border-radius:10px;color:white;font-weight:bold;background:linear-gradient(90deg,#a855f7,#7135c4)}
+.authswitch{text-align:center;color:var(--muted);font-size:12px;margin-top:15px}
+.authswitch a{color:#c58aff;cursor:pointer}
+#authError{font-size:12px;color:#ff8eaa;min-height:17px;margin-top:8px}
+#sectionNotice{display:none;position:absolute;inset:66px 0 0;background:#0c0b20f5;z-index:4;padding:30px;text-align:center}
+#sectionNotice h2{color:#d7baff}
+#sectionNotice p{font-size:13px;color:var(--muted)}
+#logoutBtn{margin-top:10px;width:100%;padding:10px;background:#2b183f;border:1px solid #7441ad;color:white;border-radius:9px}
+@media(max-width:900px){
+#app{grid-template-columns:175px minmax(230px,1fr);gap:8px;padding:8px}
+.right{display:none}
+}
+@media(max-width:600px){
+#app{grid-template-columns:1fr;grid-template-rows:54px minmax(0,1fr);gap:7px;padding:7px}
+.sidebar{grid-row:1;grid-column:1;flex-direction:row;align-items:center;padding:5px 8px;overflow:hidden;gap:8px}
+.brand{border:0;padding:0;flex-shrink:0}
+.logo{width:36px;height:36px;border-radius:11px;font-size:16px}
+.brandname{font-size:15px}
+.tag,.navtitle,.sidebottom{display:none}
+.nav{flex-direction:row;overflow-x:auto;gap:4px;scrollbar-width:none}
+.nav button{padding:9px;font-size:0;flex-shrink:0}
+.nav .ico{font-size:16px}
+.center{grid-row:2;grid-column:1}
+.topbar{height:54px;padding:0 10px}
+.roomtitle{font-size:14px}
+.roomsub{font-size:9px}
+.topbtn{padding:7px}
+.profilemini{display:none}
+.chatheading{padding:10px 12px}
+.messages{padding:9px 10px}
+.composer{padding:9px}
+.composer input{padding:11px;font-size:13px}
+.send{padding:0 15px}
+}
+</style>
+</head>
+<body>
+<div id="authScreen">
+ <div class="authbox">
+  <div class="authbrand"><div class="logo">TT</div><h1>TalkTime</h1><p>YOUR NEON COMMUNITY</p></div>
+  <div id="authTitle" style="font-weight:bold;margin-bottom:8px">Welcome Back</div>
+  <input id="email" type="email" placeholder="Email address" autocomplete="email">
+  <input id="password" type="password" placeholder="Password" autocomplete="current-password">
+  <input id="username" type="text" placeholder="Your username" style="display:none">
+  <button id="authButton" onclick="authenticate()">LOGIN</button>
+  <div id="authError"></div>
+  <div class="authswitch"><span id="switchText">New here?</span> <a onclick="toggleAuth()" id="switchLink">Create account</a></div>
+ </div>
+</div>
+
+<div id="app" style="display:none">
+ <aside class="panel sidebar">
+  <div class="brand"><div class="logo">TT</div><div><div class="brandname">TALK<span>TIME</span></div><div class="tag">NEON COMMUNITY</div></div></div>
+  <div class="navtitle">MAIN MENU</div>
+  <nav class="nav">
+   <button class="active" onclick="showSection('Main Chat',this)"><span class="ico">▣</span>Main Chat</button>
+   <button onclick="showSection('Ranking',this)"><span class="ico">♛</span>Ranking</button>
+   <button onclick="showSection('News',this)"><span class="ico">◈</span>News</button>
+   <button onclick="showSection('Friends Wall',this)"><span class="ico">♡</span>Friends Wall</button>
+   <button onclick="showSection('Games',this)"><span class="ico">♟</span>Games</button>
+   <button onclick="showSection('Gifts',this)"><span class="ico">✧</span>Gifts</button>
+   <button onclick="showSection('Members',this)"><span class="ico">♧</span>Members</button>
+   <button onclick="showSection('Settings',this)"><span class="ico">⚙</span>Settings</button>
+  </nav>
+  <div class="sidebottom"><small>LOGGED IN AS</small><strong id="sideUsername">Member</strong><button id="logoutBtn" onclick="logout()">Logout</button></div>
+ </aside>
+
+ <main class="panel center">
+  <header class="topbar">
+   <div><div class="roomtitle" id="roomTitle">✦ Main Chat</div><div class="roomsub">Welcome to the TalkTime community</div></div>
+   <div class="topactions"><span class="profilemini" id="topUsername"></span><button class="topbtn" title="Members" onclick="toggleMembers()">♧</button><button class="topbtn" title="Logout" onclick="logout()">⇥</button></div>
+  </header>
+  <div class="chatheading"><h2 id="chatHeading">✦ Public Room</h2><span class="live">● LIVE CHAT</span></div>
+  <div class="messages" id="messages"><div class="systemmsg">Welcome to TalkTime. Say hello!</div></div>
+  <form class="composer" id="chatForm">
+   <input id="messageInput" maxlength="200" placeholder="Type your message..." autocomplete="off">
+   <button class="send" type="submit">SEND ➤</button>
+  </form>
+  <div id="sectionNotice"><h2 id="noticeTitle"></h2><p id="noticeText"></p></div>
+ </main>
+
+ <aside class="panel right" id="membersPanel">
+  <div class="righthead"><h3>✧ Members Online</h3><p><span class="membercount" id="memberCount">0</span> registered members</p></div>
+  <div class="memberlist" id="memberList"><div class="empty">Loading members...</div></div>
+ </aside>
+</div>
+
+<script>
+const firebaseConfig = {
+ apiKey: "AIzaSyDNrlP_auYAjDU6C43THl3cOvVqmQR1kYM",
+ authDomain: "talktime-70e88.firebaseapp.com",
+ projectId: "talktime-70e88",
+ storageBucket: "talktime-70e88.firebasestorage.app",
+ messagingSenderId: "356630061165",
+ appId: "1:356630061165:web:156f9afef56c58d1881f64",
+ measurementId: "G-VS2EHB4KM7"
+};
+const OWNER_UID = "RCRj1YJf0hSeZIPIzLgpJHQYHNR2";
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db = firebase.firestore();
+let currentUser = null;
+let currentProfile = null;
+let signupMode = false;
+let stopMessages = null;
+let stopUsers = null;
+
+function toggleAuth(){
+ signupMode = !signupMode;
+ document.getElementById("username").style.display = signupMode ? "block" : "none";
+ document.getElementById("authTitle").textContent = signupMode ? "Create your account" : "Welcome Back";
+ document.getElementById("authButton").textContent = signupMode ? "CREATE ACCOUNT" : "LOGIN";
+ document.getElementById("switchText").textContent = signupMode ? "Already registered?" : "New here?";
+ document.getElementById("switchLink").textContent = signupMode ? "Login" : "Create account";
+ document.getElementById("authError").textContent = "";
+}
+async function authenticate(){
+ const email = document.getElementById("email").value.trim();
+ const password = document.getElementById("password").value;
+ const username = document.getElementById("username").value.trim();
+ const error = document.getElementById("authError");
+ error.textContent = "";
+ try{
+  if(!email || !password) throw new Error("Email aur password enter karo.");
+  if(signupMode){
+   if(username.length < 3 || username.length > 20) throw new Error("Username 3 se 20 characters ka hona chahiye.");
+   const cred = await auth.createUserWithEmailAndPassword(email,password);
+   await db.collection("users").doc(cred.user.uid).set({
+    username: username, email: email, bio: "", photoURL: "", theme: "purple",
+    createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+    lastSeen: firebase.firestore.FieldValue.serverTimestamp()
+   });
+  }else{
+   await auth.signInWithEmailAndPassword(email,password);
+  }
+ }catch(e){error.textContent = friendlyError(e);}
+}
+function friendlyError(e){
+ const map = {
+  "auth/email-already-in-use":"This email is already registered.",
+  "auth/invalid-email":"Email address is not valid.",
+  "auth/weak-password":"Password kam az kam 6 characters ka hona chahiye.",
+  "auth/user-not-found":"Account nahi mila. Pehle signup karo.",
+  "auth/wrong-password":"Password ghalat hai.",
+  "auth/invalid-credential":"Email ya password ghalat hai.",
+  "auth/operation-not-allowed":"Firebase mein Email/Password login enable karo."
+ };
+ return map[e.code] || e.message || "Something went wrong.";
+}
+auth.onAuthStateChanged(async user=>{
+ if(!user){
+  currentUser = null;
+  document.getElementById("authScreen").style.display = "grid";
+  document.getElementById("app").style.display = "none";
+  if(stopMessages) stopMessages();
+  if(stopUsers) stopUsers();
+  return;
+ }
+ currentUser = user;
+ try{
+  const ref = db.collection("users").doc(user.uid);
+  let snap = await ref.get();
+  if(!snap.exists){
+   const fallback = (user.email || "Member").split("@")[0].slice(0,20);
+   await ref.set({
+    username:fallback,email:user.email || "",bio:"",photoURL:"",theme:"purple",
+    createdAt:firebase.firestore.FieldValue.serverTimestamp(),
+    lastSeen:firebase.firestore.FieldValue.serverTimestamp()
+   });
+   snap = await ref.get();
+  }
+  currentProfile = snap.data();
+  await ref.update({lastSeen:firebase.firestore.FieldValue.serverTimestamp()});
+  document.getElementById("authScreen").style.display = "none";
+  document.getElementById("app").style.display = "grid";
+  const name = currentProfile.username || "Member";
+  document.getElementById("sideUsername").textContent = name + (user.uid === OWNER_UID ? " · OWNER" : "");
+  document.getElementById("topUsername").textContent = name;
+  startMessages();
+  startMembers();
+ }catch(e){
+  document.getElementById("authError").textContent = "Profile load error: " + friendlyError(e);
+  document.getElementById("authScreen").style.display = "grid";
+ }
+});
+function escapeHTML(value){
+ return String(value).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+}
+function initials(name){return escapeHTML((name || "U").trim().slice(0,1).toUpperCase());}
+function startMessages(){
+ if(stopMessages) stopMessages();
+ stopMessages = db.collection("rooms").doc("main").collection("messages")
+  .orderBy("createdAt","asc").limit(100)
+  .onSnapshot(snapshot=>{
+   const box = document.getElementById("messages");
+   box.innerHTML = "";
+   if(snapshot.empty){box.innerHTML='<div class="systemmsg">No messages yet. Start the conversation!</div>';return;}
+   snapshot.forEach(doc=>{
+    const m = doc.data();
+    const isOwner = m.uid === OWNER_UID;
+    const time = m.createdAt && m.createdAt.toDate ? m.createdAt.toDate().toLocaleTimeString([], {hour:"2-digit",minute:"2-digit"}) : "";
+    const item = document.createElement("div");
+    item.className = "msg";
+    item.innerHTML = '<div class="avatar">'+initials(m.username)+'</div><div class="msgbody"><div class="msghead"><span class="msgname">'+escapeHTML(m.username || "Member")+'</span>'+(isOwner?'<span class="ownerbadge">OWNER</span>':'')+'<span class="msgtime">'+escapeHTML(time)+'</span></div><div class="msgtext">'+escapeHTML(m.text || "")+'</div></div>';
+    box.appendChild(item);
+   });
+   box.scrollTop = box.scrollHeight;
+  },err=>showSystemError(err));
+}
+function showSystemError(err){
+ const box = document.getElementById("messages");
+ box.innerHTML = '<div class="empty">Chat load nahi hui: '+escapeHTML(err.message)+'</div>';
+}
+document.getElementById("chatForm").addEventListener("submit",async e=>{
+ e.preventDefault();
+ const input = document.getElementById("messageInput");
+ const text = input.value.trim();
+ if(!text || !currentUser || !currentProfile) return;
+ if(text.length > 200){alert("Message 200 characters se zyada nahi ho sakta.");return;}
+ input.disabled = true;
+ try{
+  await db.collection("rooms").doc("main").collection("messages").add({
+   uid:currentUser.uid,
+   username:currentProfile.username || "Member",
+   text:text,
+   createdAt:firebase.firestore.FieldValue.serverTimestamp()
+  });
+  input.value = "";
+ }catch(err){alert("Message send nahi hua: " + friendlyError(err));}
+ input.disabled = false;
+ input.focus();
+});
+function startMembers(){
+ if(stopUsers) stopUsers();
+ stopUsers = db.collection("users").onSnapshot(snapshot=>{
+  const list = document.getElementById("memberList");
+  const members = [];
+  snapshot.forEach(doc=>members.push({uid:doc.id,...doc.data()}));
+  members.sort((a,b)=>{
+   if(a.uid === OWNER_UID) return -1;
+   if(b.uid === OWNER_UID) return 1;
+   return (a.username || "").localeCompare(b.username || "");
+  });
+  document.getElementById("memberCount").textContent = members.length;
+  list.innerHTML = "";
+  if(!members.length){list.innerHTML='<div class="empty">No members yet</div>';return;}
+  members.forEach(m=>{
+   const el = document.createElement("div");
+   el.className = "member";
+   el.innerHTML = '<div class="avatar">'+initials(m.username)+'</div><div class="memberinfo"><div class="membername">'+escapeHTML(m.username || "Member")+(m.uid===OWNER_UID?' <span class="ownerbadge">OWNER</span>':'')+'</div><div class="memberstatus">● Registered member</div></div>';
+   list.appendChild(el);
+  });
+ },err=>{
+  document.getElementById("memberList").innerHTML='<div class="empty">Members load nahi ho sake: '+escapeHTML(err.message)+'</div>';
+ });
+}
+function showSection(name,button){
+ document.querySelectorAll(".nav button").forEach(b=>b.classList.remove("active"));
+ if(button) button.classList.add("active");
+ const notice = document.getElementById("sectionNotice");
+ const title = document.getElementById("noticeTitle");
+ const text = document.getElementById("noticeText");
+ const composer = document.getElementById("chatForm");
+ const messages = document.getElementById("messages");
+ const heading = document.getElementById("chatHeading");
+ if(name === "Main Chat"){
+  notice.style.display = "none";
+  composer.style.display = "flex";
+  messages.style.display = "flex";
+  heading.textContent = "✦ Public Room";
+  document.getElementById("roomTitle").textContent = "✦ Main Chat";
+  return;
+ }
+ composer.style.display = "none";
+ messages.style.display = "none";
+ notice.style.display = "block";
+ title.textContent = name;
+ const descriptions = {
+  "Ranking":"Member ranking and levels will appear here when ranking features are added.",
+  "News":"Community news will appear here.",
+  "Friends Wall":"Your friends' posts will appear here.",
+  "Games":"Games section is coming soon.",
+  "Gifts":"Gift section is coming soon.",
+  "Members":"All registered TalkTime members are listed in the panel on the right.",
+  "Settings":"Account settings and profile options will be added here."
+ };
+ text.textContent = descriptions[name] || "This section is not available yet.";
+ document.getElementById("roomTitle").textContent = "✦ " + name;
+}
+function toggleMembers(){
+ const panel = document.getElementById("membersPanel");
+ if(window.innerWidth <= 900){
+  const visible = panel.style.display === "flex";
+  panel.style.display = visible ? "none" : "flex";
+  if(!visible){
+   panel.style.position = "fixed";
+   panel.style.zIndex = "10";
+   panel.style.top = "70px";
+   panel.style.right = "8px";
+   panel.style.bottom = "8px";
+   panel.style.width = "250px";
+  }
+ }
+}
+async function logout(){
+ try{await auth.signOut();}catch(e){alert(friendlyError(e));}
+}
+</script>
+</body>
+</html>
