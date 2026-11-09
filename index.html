@@ -4,410 +4,274 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>TalkTime - Purple Neon Chat</title>
-
-<style>
-*{box-sizing:border-box}
-body{
- margin:0;background:#090617;color:#f7edff;
- font-family:Arial,sans-serif;
- background-image:radial-gradient(ellipse at top,#32105c 0%,#100922 48%,#070510 100%);
- min-height:100vh
-}
-button,input,textarea{font:inherit}
-button{cursor:pointer}
-.app{max-width:1500px;margin:auto;padding:18px}
-header{
- display:flex;justify-content:space-between;align-items:center;
- padding:15px 20px;margin-bottom:16px;
- background:#160d2b;border:1px solid #7135a0;
- border-radius:17px;box-shadow:0 0 20px #8c31bd55
-}
-.logo{font-size:25px;font-weight:bold;color:#e8baff;text-shadow:0 0 15px #c35aff}
-.logo span{color:#a65cff}
-#account{font-size:13px;color:#d8b7ff}
-.layout{display:grid;grid-template-columns:190px minmax(300px,1fr) 260px;gap:15px}
-.panel{
- background:#160f29eF;border:1px solid #63348b;
- border-radius:17px;padding:15px;
- box-shadow:0 0 18px #8429bd22
-}
-h2,h3{margin-top:0;color:#e8c3ff}
-.nav button,.action{
- width:100%;padding:12px;margin:5px 0;border:1px solid #65338a;
- border-radius:11px;background:#25143d;color:#f4dfff;text-align:left
-}
-.nav button:hover,.action:hover{background:#57258a;box-shadow:0 0 12px #bd56ff}
-.profile{text-align:center;margin-bottom:20px}
-.avatar{
- width:65px;height:65px;border-radius:50%;margin:5px auto 10px;
- display:grid;place-items:center;font-size:28px;
- background:linear-gradient(135deg,#a23cff,#ff65c7);
- box-shadow:0 0 18px #c35aff
-}
-.rank{color:#ffcf67;font-weight:bold;font-size:12px}
-.muted{color:#bda9d1;font-size:12px}
-#chatBox{
- height:430px;overflow-y:auto;padding:12px;
- background:#0d091a;border:1px solid #40235e;border-radius:13px;
- margin-bottom:12px
-}
-.msg{padding:9px 11px;margin:9px 0;background:#211437;border-radius:12px;border-left:3px solid #bd61ff;overflow-wrap:anywhere}
-.msg .who{color:#e5b7ff;font-weight:bold;font-size:13px}
-.msg .time{color:#9b87b0;font-size:10px;float:right}
-.msg p{margin:7px 0 0}
-.compose{display:flex;gap:8px}
-input,textarea{
- width:100%;padding:12px;color:white;background:#0d0919;
- border:1px solid #69418a;border-radius:10px;outline:none
-}
-input:focus,textarea:focus{border-color:#d17aff}
-.primary{
- padding:11px 16px;border:0;border-radius:10px;
- color:white;background:linear-gradient(120deg,#8c32cf,#d33da8)
-}
-.member{display:flex;align-items:center;gap:9px;padding:9px 3px;border-bottom:1px solid #342148;font-size:13px}
-.dot{width:9px;height:9px;border-radius:50%;background:#39e88b}
-.offline{background:#777}
-.section{display:none}
-.section.active{display:block}
-.item{padding:11px;background:#211437;border-radius:10px;margin:9px 0;overflow-wrap:anywhere}
-#auth{
- max-width:420px;margin:8vh auto;padding:25px;
- background:#160f29;border:1px solid #8a43b6;border-radius:18px;
- box-shadow:0 0 25px #a43bda55
-}
-#auth input{margin:7px 0}
-#status{color:#ffcf67;font-size:12px;margin-top:10px}
-.smallbtn{padding:7px 10px;background:#36204d;color:white;border:1px solid #8050a5;border-radius:8px}
-@media(max-width:850px){
- .layout{grid-template-columns:1fr}
- .nav{display:flex;flex-wrap:wrap;gap:5px}
- .nav button{width:auto;flex:1;text-align:center}
- #chatBox{height:48vh}
-}
-</style>
-</head>
-
-<body>
-<div id="auth">
- <div class="logo">✦ Talk<span>Time</span></div>
- <h2>Welcome to TalkTime</h2>
- <p class="muted">Sign in or create your account</p>
- <input id="email" type="email" placeholder="Email address">
- <input id="password" type="password" placeholder="Password">
- <input id="username" placeholder="Your display name (signup only)">
- <button class="primary" style="width:100%;margin-top:8px" onclick="signup()">Create Account</button>
- <button class="smallbtn" style="width:100%;margin-top:8px" onclick="login()">Login</button>
- <div id="status"></div>
-</div>
-
-<div class="app" id="app" style="display:none">
- <header>
-  <div class="logo">✦ Talk<span>Time</span></div>
-  <div id="account">Welcome</div>
-  <button class="smallbtn" onclick="logout()">Logout</button>
- </header>
-
- <div class="layout">
-  <aside class="panel">
-   <div class="profile">
-    <div class="avatar">👑</div>
-    <div id="myName">Muhamad Amir</div>
-    <div class="rank" id="myRank">OWNER</div>
-    <div class="muted" id="myStats">Coins: 0 · Ruby: 0</div>
-   </div>
-   <h3>Navigation</h3>
-   <div class="nav">
-    <button onclick="showPage('leaderboard')">🏆 Leaderboard</button>
-    <button onclick="showPage('news')">📰 News</button>
-    <button onclick="showPage('wall')">💜 Friend Wall</button>
-   </div>
-   <hr style="border-color:#38234d">
-   <h3>My Profile</h3>
-   <input id="newName" placeholder="Change display name">
-   <button class="action" onclick="saveName()">Save Name</button>
-   <p class="muted">More profile styles and features can be added later.</p>
-  </aside>
-
-  <main class="panel">
-   <section id="mainchat" class="section active">
-    <h2>💬 Main Chat</h2>
-    <div class="muted">Welcome to the TalkTime community</div>
-    <div id="chatBox"></div>
-    <div class="compose">
-     <input id="message" maxlength="1000" placeholder="Write a message...">
-     <button class="primary" onclick="sendMessage()">Send</button>
-    </div>
-   </section>
-
-   <section id="leaderboard" class="section">
-    <h2>🏆 Leaderboard</h2>
-    <div id="leaderList">Loading members...</div>
-   </section>
-
-   <section id="news" class="section">
-    <h2>📰 TalkTime News</h2>
-    <div id="newsList">Loading news...</div>
-    <div id="newsAdmin" style="display:none">
-     <textarea id="newsText" placeholder="Write news..." rows="3"></textarea>
-     <button class="primary" onclick="postNews()">Publish News</button>
-    </div>
-   </section>
-
-   <section id="wall" class="section">
-    <h2>💜 Friend Wall</h2>
-    <textarea id="wallText" rows="3" placeholder="Write on the wall..."></textarea>
-    <button class="primary" onclick="postWall()">Post</button>
-    <div id="wallList">Loading posts...</div>
-   </section>
-  </main>
-
-  <aside class="panel">
-   <h3>🟢 Online Members</h3>
-   <div id="onlineList"></div>
-   <h3 style="margin-top:20px">⚫ Offline Members</h3>
-   <div id="offlineList"></div>
-  </aside>
- </div>
-</div>
-
+<title>TalkTime - Community Chat</title>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<style>
+:root{--bg:#080d20;--panel:#101a35;--panel2:#142344;--line:#293d69;--purple:#9b70ff;--cyan:#36d9ee;--txt:#eef3ff;--muted:#9aabc9}
+*{box-sizing:border-box}
+body{margin:0;background:radial-gradient(circle at top,#172653,#080d20 60%);color:var(--txt);font-family:Arial,sans-serif}
+button,input,textarea{font:inherit}
+button{cursor:pointer}
+#auth{max-width:420px;margin:8vh auto;padding:24px;background:var(--panel);border:1px solid var(--line);border-radius:20px;box-shadow:0 0 35px #754dff25}
+h1{margin:0;color:#c5aaff}
+.sub{color:var(--muted);margin:8px 0 22px}
+input,textarea{width:100%;padding:13px;margin:7px 0;background:#09132b;color:white;border:1px solid var(--line);border-radius:10px;outline:none}
+button{border:0;border-radius:10px;padding:11px 15px;background:linear-gradient(110deg,#7652df,#387be9);color:white;font-weight:bold}
+button.secondary{background:#1c2b4d;border:1px solid var(--line)}
+#app{display:none;min-height:100vh}
+header{height:65px;display:flex;align-items:center;justify-content:space-between;padding:0 18px;background:#0b1430;border-bottom:1px solid var(--line);position:sticky;top:0;z-index:2}
+.brand{font-size:22px;font-weight:bold;color:#c5aaff}
+.layout{display:grid;grid-template-columns:205px minmax(0,1fr) 230px;gap:12px;padding:12px;max-width:1500px;margin:auto}
+.panel{background:#101a35;border:1px solid var(--line);border-radius:15px;padding:14px;min-width:0}
+.nav button{display:block;width:100%;text-align:left;margin:7px 0;background:#172647;border:1px solid #263b67}
+.nav button.active{background:linear-gradient(100deg,#6748c8,#235c9b)}
+#chatPanel{height:calc(100vh - 100px);display:flex;flex-direction:column}
+#messages{flex:1;overflow:auto;padding:10px;display:flex;flex-direction:column;gap:10px}
+.msg{background:#172747;border:1px solid #293e68;border-radius:12px;padding:10px;overflow-wrap:anywhere}
+.msghead{display:flex;gap:8px;align-items:center;font-size:13px;color:#c4d4f5;margin-bottom:5px}
+.owner{font-size:10px;background:#704bd2;color:white;padding:4px 7px;border-radius:20px}
+.time{color:var(--muted);font-size:11px;margin-left:auto}
+#sendRow{display:flex;gap:8px;padding-top:10px;border-top:1px solid var(--line)}
+#messageInput{margin:0;flex:1}
+#sendBtn{min-width:70px}
+.member{display:flex;align-items:center;gap:8px;padding:9px 4px;border-bottom:1px solid #26385e;font-size:13px}
+.dot{width:8px;height:8px;border-radius:50%;background:#42d98a}
+.small{font-size:12px;color:var(--muted)}
+#viewPanel{display:none;min-height:65vh}
+#profileForm{max-width:500px}
+.hidden{display:none!important}
+body.theme-purple{--bg:#160d29;--panel:#21143b;--panel2:#302052;--line:#583c80;--purple:#c18bff}
+body.theme-forest{--bg:#071c19;--panel:#0e2b25;--panel2:#174137;--line:#286454}
+body.theme-ruby{--bg:#240d19;--panel:#351424;--panel2:#4a1c31;--line:#71334e}
+body.theme-golden{--bg:#211b0b;--panel:#332a12;--panel2:#4a3c19;--line:#76602a}
+@media(max-width:850px){.layout{grid-template-columns:1fr}.nav{display:flex;overflow:auto;gap:6px}.nav button{min-width:max-content;width:auto}.right{order:3}#chatPanel{height:65vh}}
+</style>
+</head>
+<body>
+<section id="auth">
+<h1>TalkTime ✦</h1>
+<p class="sub">Welcome to your community</p>
+<input id="email" type="email" placeholder="Gmail address">
+<input id="password" type="password" placeholder="Password">
+<input id="username" placeholder="Username (for new account)">
+<div style="display:flex;gap:8px">
+<button id="loginBtn" style="flex:1">Login</button>
+<button id="signupBtn" class="secondary" style="flex:1">Sign up</button>
+</div>
+<p id="authStatus" class="small"></p>
+</section>
+
+<div id="app">
+<header>
+<div class="brand">TalkTime ✦</div>
+<div style="display:flex;gap:8px">
+<button class="secondary" id="profileBtn">Profile</button>
+<button class="secondary" id="logoutBtn">Logout</button>
+</div>
+</header>
+
+<div class="layout">
+<aside class="panel nav">
+<button class="active" data-view="chat">💬 Main Chat</button>
+<button data-view="ranking">🏆 Ranking</button>
+<button data-view="news">📰 News</button>
+<button data-view="friends">👥 Friends Wall</button>
+<button data-view="games">🎮 Games</button>
+<button data-view="gifts">🎁 Gifts</button>
+<button data-view="members">🌐 Members</button>
+<button data-view="settings">⚙️ Settings</button>
+</aside>
+
+<main class="panel" id="chatPanel">
+<div id="chatHeading"><h2 style="margin:0">Main Chat</h2><p class="small">Welcome to TalkTime community</p></div>
+<div id="messages"></div>
+<div id="sendRow">
+<input id="messageInput" maxlength="200" placeholder="Write a message...">
+<button id="sendBtn">Send</button>
+</div>
+</main>
+
+<main class="panel" id="viewPanel"></main>
+
+<aside class="panel right">
+<h3 style="margin-top:0">Members <span id="memberCount" class="small"></span></h3>
+<div id="memberList"></div>
+</aside>
+</div>
+</div>
 
 <script>
 const firebaseConfig = {
- apiKey: "AIzaSyDNrlP_auYAjDU6C43THl3cOvVqmQR1kYM",
- authDomain: "talktime-70e88.firebaseapp.com",
- projectId: "talktime-70e88",
- storageBucket: "talktime-70e88.firebasestorage.app",
- messagingSenderId: "356630061165",
- appId: "1:356630061165:web:156f9afef56c58d1881f64",
- measurementId: "G-VS2EHB4KM7"
+  apiKey: "AIzaSyDNrlP_auYAjDU6C43THl3cOvVqmQR1kYM",
+  authDomain: "talktime-70e88.firebaseapp.com",
+  projectId: "talktime-70e88",
+  storageBucket: "talktime-70e88.firebasestorage.app",
+  messagingSenderId: "356630061165",
+  appId: "1:356630061165:web:156f9afef56c58d1881f64",
+  measurementId: "G-VS2EHB4KM7"
 };
 
 firebase.initializeApp(firebaseConfig);
-const auth = firebase.auth();
-const db = firebase.firestore();
+const auth=firebase.auth();
+const db=firebase.firestore();
+const OWNER_UID="RCRj1YJf0hSeZIPIzLgpJHQYHNR2";
 
-const OWNER_UID = "RCRj1YJf0hSeZIPIzLgpJHQYHNR2";
-let currentUser = null;
-let profile = null;
-let unsubMessages = null;
-let unsubUsers = null;
-let unsubNews = null;
-let unsubWall = null;
+let currentUser=null, myProfile=null, stopMessages=null, stopUsers=null, stopNews=null;
+const $=id=>document.getElementById(id);
+const isOwner=()=>currentUser && currentUser.uid===OWNER_UID;
+const status=(s)=>$("authStatus").textContent=s;
 
-const $ = id => document.getElementById(id);
-function safeText(el,value){el.textContent=value ?? ""}
-function errorText(e){$("status").textContent=e.message || "Something went wrong";}
-
-async function signup(){
+$("loginBtn").onclick=async()=>{
+ try{await auth.signInWithEmailAndPassword($("email").value.trim(),$("password").value)}
+ catch(e){status(e.message)}
+};
+$("signupBtn").onclick=async()=>{
  try{
-  const email=$("email").value.trim();
-  const password=$("password").value;
   const name=$("username").value.trim();
-  if(!name) throw Error("Please enter your display name");
-  if(name.length>30) throw Error("Name is too long");
-  const result=await auth.createUserWithEmailAndPassword(email,password);
-  await db.collection("users").doc(result.user.uid).set({
-   name:name,username:name,rank:"Member",coins:0,ruby:0,level:1,
-   online:true,status:"Online",createdAt:firebase.firestore.FieldValue.serverTimestamp()
+  if(name.length<3||name.length>20) return status("Username 3 se 20 letters ka hona chahiye.");
+  const cred=await auth.createUserWithEmailAndPassword($("email").value.trim(),$("password").value);
+  await db.collection("users").doc(cred.user.uid).set({
+   username:name,bio:"",photoURL:"",theme:"ocean",
+   createdAt:firebase.firestore.FieldValue.serverTimestamp(),
+   lastSeen:firebase.firestore.FieldValue.serverTimestamp()
   });
- }catch(e){errorText(e);}
-}
-
-async function login(){
- try{
-  await auth.signInWithEmailAndPassword(
-   $("email").value.trim(),$("password").value
-  );
- }catch(e){errorText(e);}
-}
-
-async function logout(){
- if(currentUser){
-  try{
-   await db.collection("users").doc(currentUser.uid).update({
-    online:false,status:"Offline"
-   });
-  }catch(e){}
- }
- await auth.signOut();
-}
+ }catch(e){status(e.message)}
+};
+$("logoutBtn").onclick=()=>auth.signOut();
+$("profileBtn").onclick=()=>showView("settings");
 
 auth.onAuthStateChanged(async user=>{
- if(!user){
-  currentUser=null;
-  $("auth").style.display="block";
-  $("app").style.display="none";
-  stopListeners();
-  return;
- }
+ if(stopMessages)stopMessages();
+ if(stopUsers)stopUsers();
+ if(stopNews)stopNews();
  currentUser=user;
- $("auth").style.display="none";
- $("app").style.display="block";
+ if(!user){$("auth").style.display="block";$("app").style.display="none";return}
  try{
   const ref=db.collection("users").doc(user.uid);
   let snap=await ref.get();
   if(!snap.exists){
    await ref.set({
-    name:user.email.split("@")[0],
-    username:user.email.split("@")[0],
-    rank:"Member",coins:0,ruby:0,level:1,
-    online:true,status:"Online"
+    username:(user.email||"Member").split("@")[0].slice(0,20),
+    bio:"",photoURL:"",theme:"ocean",
+    createdAt:firebase.firestore.FieldValue.serverTimestamp(),
+    lastSeen:firebase.firestore.FieldValue.serverTimestamp()
    });
    snap=await ref.get();
   }
-  profile=snap.data();
-  await ref.update({online:true,status:"Online"});
-  updateProfile();
-  startListeners();
- }catch(e){
-  alert("Profile error: "+e.message);
- }
+  myProfile=snap.data();
+  $("auth").style.display="none";$("app").style.display="block";
+  applyTheme(myProfile.theme);
+  listenChat();listenUsers();
+  showView("chat");
+  await ref.update({lastSeen:firebase.firestore.FieldValue.serverTimestamp()});
+ }catch(e){alert("Profile load error: "+e.message)}
 });
 
-function displayRank(uid,rank){
- if(uid===OWNER_UID)return "👑 OWNER";
- return rank || "Member";
+function applyTheme(t){
+ document.body.className="";
+ if(["purple","forest","ruby","golden"].includes(t))document.body.classList.add("theme-"+t);
 }
-
-function updateProfile(){
- const name=profile.name || profile.username || "Member";
- $("myName").textContent=name;
- $("myRank").textContent=displayRank(currentUser.uid,profile.rank);
- $("myStats").textContent="Coins: "+(profile.coins||0)+" · Ruby: "+(profile.ruby||0);
- $("account").textContent=name;
- $("newsAdmin").style.display=
-  (currentUser.uid===OWNER_UID || ["Admin","Super Admin"].includes(profile.rank))
-  ?"block":"none";
-}
-
-async function saveName(){
- const name=$("newName").value.trim();
- if(!name || name.length>30)return alert("Enter a name up to 30 characters");
- try{
-  await db.collection("users").doc(currentUser.uid).update({
-   name:name,username:name
+function listenChat(){
+ stopMessages=db.collection("rooms/main/messages").orderBy("createdAt","asc").limitToLast(100)
+ .onSnapshot(snap=>{
+  const box=$("messages");box.innerHTML="";
+  snap.forEach(doc=>{
+   const m=doc.data(), el=document.createElement("div");el.className="msg";
+   const head=document.createElement("div");head.className="msghead";
+   const name=document.createElement("b");name.textContent=m.username||"Member";
+   head.appendChild(name);
+   if(m.uid===OWNER_UID){const badge=document.createElement("span");badge.className="owner";badge.textContent="OWNER";head.appendChild(badge)}
+   const time=document.createElement("span");time.className="time";
+   time.textContent=m.createdAt?.toDate?m.createdAt.toDate().toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"}):"";
+   head.appendChild(time);
+   const body=document.createElement("div");body.textContent=m.text||"";
+   el.append(head,body);box.appendChild(el);
   });
-  profile.name=name;
-  updateProfile();
-  $("newName").value="";
- }catch(e){alert(e.message);}
+  box.scrollTop=box.scrollHeight;
+ },e=>alert("Chat error: "+e.message));
 }
-
-function startListeners(){
- stopListeners();
-
- unsubMessages=db.collection("rooms").doc("main")
-  .collection("messages").orderBy("createdAt","asc").limitToLast(100)
-  .onSnapshot(snapshot=>{
-   const box=$("chatBox");box.replaceChildren();
-   snapshot.forEach(doc=>{
-    const m=doc.data();
-    const item=document.createElement("div");item.className="msg";
-    const who=document.createElement("div");who.className="who";
-    who.textContent=(m.name||"Member")+" · "+displayRank(m.uid,m.rank);
-    const p=document.createElement("p");p.textContent=m.text||"";
-    item.append(who,p);box.append(item);
-   });
-   box.scrollTop=box.scrollHeight;
-  },e=>console.log(e));
-
- unsubUsers=db.collection("users").onSnapshot(snapshot=>{
-  const online=$("onlineList"),offline=$("offlineList"),leader=$("leaderList");
-  online.replaceChildren();offline.replaceChildren();leader.replaceChildren();
-  const users=[];
-  snapshot.forEach(doc=>users.push({uid:doc.id,...doc.data()}));
-  users.sort((a,b)=>(b.coins||0)-(a.coins||0));
-  users.forEach(u=>{
-   const row=document.createElement("div");row.className="member";
-   const dot=document.createElement("span");
-   dot.className="dot "+(u.online?"":"offline");
-   const label=document.createElement("span");
-   label.textContent=(u.name||u.username||"Member")+" · "+displayRank(u.uid,u.rank);
-   row.append(dot,label);
-   (u.online?online:offline).append(row);
-
-   const l=document.createElement("div");l.className="item";
-   l.textContent="👤 "+(u.name||"Member")+" — "+displayRank(u.uid,u.rank)+" | 🪙 "+(u.coins||0)+" | ❤️ "+(u.likes||0);
-   leader.append(l);
-  });
-  if(!users.length)leader.textContent="No members yet";
- },e=>console.log(e));
-
- unsubNews=db.collection("news").orderBy("createdAt","desc")
-  .onSnapshot(s=>{
-   const box=$("newsList");box.replaceChildren();
-   s.forEach(d=>{
-    const el=document.createElement("div");el.className="item";
-    el.textContent=d.data().text||"";
-    box.append(el);
-   });
-  },e=>console.log(e));
-
- unsubWall=db.collection("wallPosts").orderBy("createdAt","desc")
-  .onSnapshot(s=>{
-   const box=$("wallList");box.replaceChildren();
-   s.forEach(d=>{
-    const el=document.createElement("div");el.className="item";
-    el.textContent=(d.data().name||"Member")+": "+(d.data().text||"");
-    box.append(el);
-   });
-  },e=>console.log(e));
-}
-
-function stopListeners(){
- [unsubMessages,unsubUsers,unsubNews,unsubWall].forEach(fn=>{if(fn)fn();});
- unsubMessages=unsubUsers=unsubNews=unsubWall=null;
-}
-
+$("sendBtn").onclick=sendMessage;
+$("messageInput").addEventListener("keydown",e=>{if(e.key==="Enter")sendMessage()});
 async function sendMessage(){
- const text=$("message").value.trim();
- if(!text)return;
- if(text.length>1000)return alert("Message too long");
+ const text=$("messageInput").value.trim();
+ if(!text||!currentUser||!myProfile)return;
+ if(text.length>200)return alert("Message 200 characters se zyada nahi ho sakta.");
+ $("sendBtn").disabled=true;
  try{
-  await db.collection("rooms").doc("main").collection("messages").add({
-   uid:currentUser.uid,
-   name:profile.name||profile.username||"Member",
-   rank:profile.rank||"Member",
-   text:text,
+  await db.collection("rooms/main/messages").add({
+   uid:currentUser.uid,username:myProfile.username,text,
    createdAt:firebase.firestore.FieldValue.serverTimestamp()
   });
-  $("message").value="";
- }catch(e){alert(e.message);}
+  $("messageInput").value="";
+ }catch(e){alert("Message send nahi hua: "+e.message)}
+ $("sendBtn").disabled=false;
 }
-
-async function postNews(){
- const text=$("newsText").value.trim();
- if(!text)return;
- try{
-  await db.collection("news").add({
-   text:text,uid:currentUser.uid,
-   createdAt:firebase.firestore.FieldValue.serverTimestamp()
+function listenUsers(){
+ stopUsers=db.collection("users").onSnapshot(snap=>{
+  const list=$("memberList");list.innerHTML="";
+  $("memberCount").textContent="("+snap.size+")";
+  snap.forEach(doc=>{
+   const u=doc.data(),row=document.createElement("div");row.className="member";
+   const dot=document.createElement("span");dot.className="dot";
+   const name=document.createElement("b");name.textContent=u.username||"Member";
+   row.append(dot,name);
+   if(doc.id===OWNER_UID){const b=document.createElement("span");b.className="owner";b.textContent="OWNER";row.append(b)}
+   list.append(row);
   });
-  $("newsText").value="";
- }catch(e){alert(e.message);}
+ });
 }
-
-async function postWall(){
- const text=$("wallText").value.trim();
- if(!text)return;
- try{
-  await db.collection("wallPosts").add({
-   text:text,uid:currentUser.uid,
-   name:profile.name||profile.username||"Member",
-   createdAt:firebase.firestore.FieldValue.serverTimestamp()
+document.querySelectorAll("[data-view]").forEach(b=>b.onclick=()=>showView(b.dataset.view));
+function showView(view){
+ $("chatPanel").style.display=view==="chat"?"flex":"none";
+ $("viewPanel").style.display=view==="chat"?"none":"block";
+ document.querySelectorAll("[data-view]").forEach(b=>b.classList.toggle("active",b.dataset.view===view));
+ const panel=$("viewPanel");panel.innerHTML="";
+ const title=document.createElement("h2");
+ const p=document.createElement("p");p.className="small";
+ if(view==="settings"){
+  title.textContent="Your Profile";
+  panel.append(title);
+  const form=document.createElement("div");form.id="profileForm";
+  form.innerHTML='<label>Username</label><input id="editName" maxlength="20"><label>Bio</label><textarea id="editBio" maxlength="160"></textarea><label>Profile photo URL (optional)</label><input id="editPhoto" placeholder="https://..."><label>Your personal theme</label><select id="editTheme"><option value="ocean">Ocean</option><option value="purple">Purple</option><option value="forest">Forest</option><option value="ruby">Ruby</option><option value="golden">Golden</option></select><button id="saveProfile">Save Profile</button>';
+  panel.append(form);
+  $("editName").value=myProfile.username||"";
+  $("editBio").value=myProfile.bio||"";
+  $("editPhoto").value=myProfile.photoURL||"";
+  $("editTheme").value=myProfile.theme||"ocean";
+  $("saveProfile").onclick=async()=>{
+   const name=$("editName").value.trim();
+   if(name.length<3||name.length>20)return alert("Username 3 se 20 letters ka hona chahiye.");
+   try{
+    const changes={username:name,bio:$("editBio").value.slice(0,160),photoURL:$("editPhoto").value.trim(),theme:$("editTheme").value};
+    await db.collection("users").doc(currentUser.uid).update(changes);
+    myProfile={...myProfile,...changes};applyTheme(myProfile.theme);alert("Profile saved!");
+   }catch(e){alert(e.message)}
+  };
+ }else if(view==="news"){
+  title.textContent="Community News";panel.append(title);
+  if(isOwner()){
+   const btn=document.createElement("button");btn.textContent="Publish News";
+   btn.onclick=async()=>{
+    const text=prompt("News message likho:");
+    if(!text||!text.trim())return;
+    try{await db.collection("news").add({text:text.trim().slice(0,500),createdBy:currentUser.uid,createdAt:firebase.firestore.FieldValue.serverTimestamp()})}
+    catch(e){alert(e.message)}
+   };panel.append(btn);
+  }
+  const list=document.createElement("div");panel.append(list);
+  if(stopNews)stopNews();
+  stopNews=db.collection("news").orderBy("createdAt","desc").limit(30).onSnapshot(s=>{
+   list.innerHTML="";
+   s.forEach(d=>{const card=document.createElement("div");card.className="msg";card.textContent=d.data().text;list.append(card)});
   });
-  $("wallText").value="";
- }catch(e){alert(e.message);}
-}
-
-function showPage(page){
- document.querySelectorAll(".section").forEach(s=>s.classList.remove("active"));
- $(page).classList.add("active");
+ }else{
+  const names={ranking:"Ranking",friends:"Friends Wall",games:"Games",gifts:"Gifts",members:"Members"};
+  title.textContent=names[view]||"TalkTime";panel.append(title);
+  p.textContent="Ye section abhi activate nahi hua. Isay secure aur functional banane ke liye matching database/backend setup chahiye.";
+  panel.append(p);
+ }
 }
 </script>
 </body>
