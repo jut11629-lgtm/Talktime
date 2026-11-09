@@ -3,112 +3,77 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>TalkTime Neon</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>TalkTime | Neon Community</title>
 <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore-compat.js"></script>
 <style>
-:root{--bg:#080817;--panel:#111126;--panel2:#191735;--line:#38265f;--purple:#a45cff;--pink:#df5cff;--text:#f5efff;--muted:#a69cbe;--green:#45e6a4}
-*{box-sizing:border-box}
-html,body{margin:0;width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(--text);font-family:Arial,sans-serif}
-body{background:radial-gradient(ellipse at 50% 40%,#251044 0%,#0c0b20 52%,#050510 100%)}
-button,input{font:inherit}
-button{cursor:pointer}
-#app{height:100dvh;width:100%;display:grid;grid-template-columns:215px minmax(260px,1fr) 245px;gap:12px;padding:12px;min-height:0}
-.panel{background:linear-gradient(160deg,rgba(23,20,49,.97),rgba(10,11,28,.98));border:1px solid var(--line);border-radius:17px;box-shadow:0 0 22px #8c3cff16,inset 0 0 20px #8c3cff08;min-height:0}
-.sidebar{padding:17px 12px;display:flex;flex-direction:column;gap:15px}
-.brand{display:flex;align-items:center;gap:11px;padding:4px 5px 17px;border-bottom:1px solid #30265c}
-.logo{width:43px;height:43px;border-radius:14px;display:grid;place-items:center;font-weight:900;font-size:20px;background:linear-gradient(135deg,#b35cff,#5520a5);box-shadow:0 0 20px #a855f7a0;color:white}
-.brandname{font-size:19px;font-weight:900;letter-spacing:1px}
-.brandname span{color:#c084fc}
-.tag{font-size:9px;color:#a99bc9;letter-spacing:2px;margin-top:4px}
-.navtitle{font-size:10px;letter-spacing:2px;color:#8278a7;padding:5px 9px}
-.nav{display:flex;flex-direction:column;gap:6px}
-.nav button{border:1px solid transparent;background:transparent;color:#c5bddf;text-align:left;padding:11px 12px;border-radius:10px;font-size:13px;display:flex;gap:12px;align-items:center}
-.nav button:hover,.nav button.active{background:linear-gradient(90deg,#7138bd55,#3b1b6b55);border-color:#7441ad;color:white;box-shadow:inset 0 0 15px #a855f722}
-.nav .ico{width:18px;text-align:center;font-size:16px}
-.sidebottom{margin-top:auto;border:1px solid #38265f;background:#17142d;border-radius:12px;padding:12px}
-.sidebottom small{color:var(--muted);font-size:10px}
-.sidebottom strong{display:block;margin-top:5px;font-size:12px}
+:root{--bg:#080817;--panel:#111126;--panel2:#1a1734;--line:#39265e;--purple:#a65cff;--pink:#e15cff;--text:#f5efff;--muted:#a69cbe;--green:#45e6a4}
+*{box-sizing:border-box}html,body{height:100%;width:100%;margin:0;overflow:hidden}
+body{font-family:Arial,sans-serif;color:var(--text);background:radial-gradient(ellipse at 50% 40%,#251044,#0c0b20 55%,#050510)}
+button,input{font:inherit}button{cursor:pointer}
+#app{height:100dvh;padding:12px;display:grid;grid-template-columns:215px minmax(250px,1fr) 245px;gap:12px}
+.panel{min-height:0;border:1px solid var(--line);border-radius:17px;background:linear-gradient(155deg,#191633f5,#0c0c20f7);box-shadow:0 0 24px #9b50ff18}
+.sidebar{padding:16px 12px;display:flex;flex-direction:column;gap:15px}
+.brand{display:flex;align-items:center;gap:10px;padding:4px 4px 17px;border-bottom:1px solid var(--line)}
+.logo{width:43px;height:43px;border-radius:14px;background:linear-gradient(135deg,#b45cff,#5420a5);display:grid;place-items:center;font-weight:900;font-size:20px;box-shadow:0 0 20px #a855f799}
+.brandname{font-size:18px;font-weight:900;letter-spacing:1px}.brandname span{color:#c084fc}
+.tag{font-size:9px;letter-spacing:2px;color:#a99bc9;margin-top:4px}
+.navtitle{font-size:10px;color:#8278a7;letter-spacing:2px;padding:4px 8px}
+.nav{display:flex;flex-direction:column;gap:5px}
+.nav button{border:1px solid transparent;background:transparent;color:#c5bddf;text-align:left;padding:11px;border-radius:10px;font-size:13px}
+.nav button:hover,.nav button.active{background:#7138bd40;border-color:#7441ad;color:white}
+.nav button span{display:inline-block;width:27px;font-size:16px}
+.sidebottom{margin-top:auto;background:#17142d;border:1px solid var(--line);border-radius:12px;padding:12px}
+.sidebottom small{color:var(--muted);font-size:10px}.sidebottom strong{display:block;margin:6px 0;font-size:12px}
+#logout{width:100%;padding:9px;border-radius:8px;border:1px solid #7441ad;background:#2b183f;color:white}
 .center{display:flex;flex-direction:column;overflow:hidden;min-width:0}
-.topbar{height:66px;flex-shrink:0;display:flex;align-items:center;justify-content:space-between;padding:0 18px;border-bottom:1px solid #30265c}
-.roomtitle{font-size:17px;font-weight:800}
-.roomsub{font-size:10px;color:var(--muted);margin-top:4px}
-.topactions{display:flex;align-items:center;gap:8px}
-.topbtn{background:#21183c;border:1px solid #48316c;color:white;border-radius:10px;padding:9px 11px}
-.topbtn:hover{border-color:var(--purple)}
+.topbar{height:65px;flex-shrink:0;padding:0 17px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--line)}
+.roomtitle{font-size:17px;font-weight:800}.roomsub{font-size:10px;color:var(--muted);margin-top:4px}
+.topactions{display:flex;align-items:center;gap:8px}.topbtn{background:#21183c;border:1px solid #48316c;color:white;border-radius:9px;padding:9px}
 .profilemini{font-size:12px;color:#d9cafa}
-.chatheading{padding:13px 18px 10px;display:flex;justify-content:space-between;align-items:center}
-.chatheading h2{font-size:15px;margin:0}
-.live{font-size:10px;color:var(--green);letter-spacing:1px}
-.messages{flex:1;min-height:0;overflow-y:auto;padding:12px 18px;display:flex;flex-direction:column;gap:11px;scrollbar-width:thin;scrollbar-color:#7041a5 transparent}
-.msg{display:flex;gap:10px;align-items:flex-start;max-width:90%}
-.avatar{width:34px;height:34px;flex-shrink:0;border-radius:11px;background:linear-gradient(135deg,#a855f7,#46218c);display:grid;place-items:center;font-weight:bold;color:white}
-.msgbody{background:#191631;border:1px solid #302653;border-radius:4px 13px 13px 13px;padding:9px 12px;min-width:80px}
+.chatheading{padding:13px 17px 9px;display:flex;justify-content:space-between;align-items:center}
+.chatheading h2{font-size:15px;margin:0}.live{font-size:10px;color:var(--green)}
+.messages{flex:1;min-height:0;overflow-y:auto;padding:12px 17px;display:flex;flex-direction:column;gap:11px;scrollbar-color:#7041a5 transparent}
+.msg{display:flex;gap:9px;align-items:flex-start;max-width:92%}
+.avatar{width:34px;height:34px;flex-shrink:0;border-radius:11px;background:linear-gradient(135deg,#a855f7,#46218c);display:grid;place-items:center;font-weight:bold}
+.msgbody{background:#191631;border:1px solid #302653;border-radius:4px 13px 13px 13px;padding:9px 12px;min-width:90px}
 .msghead{display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin-bottom:5px}
 .msgname{font-size:12px;font-weight:bold;color:#d7baff}
-.ownerbadge{font-size:9px;color:#fff;background:linear-gradient(90deg,#8e35d9,#d14edc);padding:3px 6px;border-radius:5px;letter-spacing:.5px}
-.msgtime{font-size:9px;color:#837a9e}
-.msgtext{font-size:13px;line-height:1.45;overflow-wrap:anywhere;color:#eee8fa}
-.systemmsg{text-align:center;color:#9284b5;font-size:11px;padding:8px}
-.composer{padding:13px 16px 15px;border-top:1px solid #30265c;display:flex;gap:9px;flex-shrink:0}
-.composer input{flex:1;min-width:0;background:#0d0d20;border:1px solid #403064;border-radius:12px;padding:13px;color:white;outline:none}
-.composer input:focus{border-color:var(--purple);box-shadow:0 0 12px #a855f733}
-.send{border:0;border-radius:12px;padding:0 20px;color:white;font-weight:bold;background:linear-gradient(135deg,#a855f7,#7135c4);box-shadow:0 0 15px #a855f755}
+.rank{font-size:9px;background:linear-gradient(90deg,#8e35d9,#d14edc);padding:3px 6px;border-radius:5px}
+.msgtime{font-size:9px;color:#837a9e}.msgtext{font-size:13px;line-height:1.45;overflow-wrap:anywhere}
+.composer{padding:12px 15px;border-top:1px solid var(--line);display:flex;gap:9px;flex-shrink:0}
+.composer input{flex:1;min-width:0;background:#0d0d20;border:1px solid #403064;border-radius:11px;padding:13px;color:white;outline:none}
+.composer input:focus{border-color:var(--purple)}
+.send{border:0;border-radius:11px;padding:0 19px;color:white;font-weight:bold;background:linear-gradient(135deg,#a855f7,#7135c4)}
 .right{display:flex;flex-direction:column;overflow:hidden}
-.righthead{padding:18px 15px;border-bottom:1px solid #30265c}
-.righthead h3{font-size:15px;margin:0}
-.righthead p{font-size:10px;color:var(--muted);margin:6px 0 0}
-.membercount{color:#c58aff}
-.memberlist{padding:10px;overflow-y:auto;min-height:0;scrollbar-width:thin;scrollbar-color:#7041a5 transparent}
-.member{display:flex;align-items:center;gap:9px;padding:10px 7px;border-radius:10px}
-.member:hover{background:#21183b}
-.member .avatar{width:32px;height:32px;border-radius:50%}
-.memberinfo{min-width:0;flex:1}
+.righthead{padding:17px 14px;border-bottom:1px solid var(--line)}
+.righthead h3{font-size:15px;margin:0}.righthead p{font-size:10px;color:var(--muted);margin:6px 0 0}
+.membercount{color:#c58aff}.memberlist{padding:9px;overflow-y:auto;min-height:0}
+.member{display:flex;align-items:center;gap:9px;padding:10px 7px;border-radius:9px}.member:hover{background:#21183b}
+.member .avatar{width:31px;height:31px;border-radius:50%}.memberinfo{min-width:0;flex:1}
 .membername{font-size:12px;font-weight:bold;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .memberstatus{font-size:10px;color:var(--green);margin-top:4px}
-.empty{color:var(--muted);font-size:12px;text-align:center;padding:25px 8px}
-#authScreen{position:fixed;inset:0;z-index:20;display:grid;place-items:center;background:radial-gradient(ellipse at center,#28134b,#080817 70%);padding:18px}
-.authbox{width:min(390px,100%);padding:27px;border:1px solid #583783;border-radius:20px;background:#111126;box-shadow:0 0 40px #a855f733}
-.authbrand{text-align:center;margin-bottom:23px}
-.authbrand .logo{margin:auto;width:58px;height:58px;font-size:24px}
-.authbrand h1{font-size:23px;margin:12px 0 5px}
-.authbrand p{font-size:11px;color:var(--muted)}
-.authbox input{width:100%;padding:13px;margin:7px 0;background:#09091a;border:1px solid #403064;border-radius:10px;color:white;outline:none}
+#authScreen{position:fixed;inset:0;z-index:10;display:grid;place-items:center;background:radial-gradient(ellipse at center,#28134b,#080817 70%);padding:18px}
+.authbox{width:min(390px,100%);padding:26px;border:1px solid #583783;border-radius:20px;background:#111126;box-shadow:0 0 40px #a855f733}
+.authbrand{text-align:center;margin-bottom:20px}.authbrand .logo{margin:auto;width:58px;height:58px}
+.authbrand h1{font-size:23px;margin:12px 0 5px}.authbrand p{font-size:10px;color:var(--muted)}
+.authbox input{width:100%;padding:13px;margin:7px 0;background:#09091a;border:1px solid #403064;border-radius:10px;color:white}
 .authbox button{width:100%;padding:13px;margin-top:9px;border:0;border-radius:10px;color:white;font-weight:bold;background:linear-gradient(90deg,#a855f7,#7135c4)}
-.authswitch{text-align:center;color:var(--muted);font-size:12px;margin-top:15px}
-.authswitch a{color:#c58aff;cursor:pointer}
-#authError{font-size:12px;color:#ff8eaa;min-height:17px;margin-top:8px}
-#sectionNotice{display:none;position:absolute;inset:66px 0 0;background:#0c0b20f5;z-index:4;padding:30px;text-align:center}
-#sectionNotice h2{color:#d7baff}
-#sectionNotice p{font-size:13px;color:var(--muted)}
-#logoutBtn{margin-top:10px;width:100%;padding:10px;background:#2b183f;border:1px solid #7441ad;color:white;border-radius:9px}
-@media(max-width:900px){
-#app{grid-template-columns:175px minmax(230px,1fr);gap:8px;padding:8px}
-.right{display:none}
-}
+.authswitch{text-align:center;color:var(--muted);font-size:12px;margin-top:14px}.authswitch a{color:#c58aff;cursor:pointer}
+#error{font-size:12px;color:#ff8eaa;min-height:18px;margin-top:8px}
+#stats{display:flex;gap:7px;flex-wrap:wrap;padding:0 17px 10px}
+.stat{font-size:10px;color:#cfc3e8;background:#1b1734;border:1px solid #38265f;border-radius:8px;padding:7px 9px}
+.stat b{color:#f3d27b}
+@media(max-width:900px){#app{grid-template-columns:170px minmax(220px,1fr);gap:8px;padding:8px}.right{display:none}}
 @media(max-width:600px){
-#app{grid-template-columns:1fr;grid-template-rows:54px minmax(0,1fr);gap:7px;padding:7px}
-.sidebar{grid-row:1;grid-column:1;flex-direction:row;align-items:center;padding:5px 8px;overflow:hidden;gap:8px}
-.brand{border:0;padding:0;flex-shrink:0}
-.logo{width:36px;height:36px;border-radius:11px;font-size:16px}
-.brandname{font-size:15px}
-.tag,.navtitle,.sidebottom{display:none}
-.nav{flex-direction:row;overflow-x:auto;gap:4px;scrollbar-width:none}
-.nav button{padding:9px;font-size:0;flex-shrink:0}
-.nav .ico{font-size:16px}
-.center{grid-row:2;grid-column:1}
-.topbar{height:54px;padding:0 10px}
-.roomtitle{font-size:14px}
-.roomsub{font-size:9px}
-.topbtn{padding:7px}
-.profilemini{display:none}
-.chatheading{padding:10px 12px}
-.messages{padding:9px 10px}
-.composer{padding:9px}
-.composer input{padding:11px;font-size:13px}
-.send{padding:0 15px}
+#app{grid-template-columns:1fr;grid-template-rows:52px minmax(0,1fr);gap:7px;padding:7px}
+.sidebar{grid-row:1;grid-column:1;flex-direction:row;align-items:center;padding:5px 7px;overflow:hidden;gap:8px}
+.brand{border:0;padding:0;flex-shrink:0}.logo{width:35px;height:35px;font-size:16px}.brandname{font-size:14px}.tag,.navtitle,.sidebottom{display:none}
+.nav{flex-direction:row;overflow-x:auto;gap:3px;scrollbar-width:none}.nav button{padding:9px;font-size:0;flex-shrink:0}.nav button span{font-size:16px;width:auto}
+.center{grid-row:2;grid-column:1}.topbar{height:53px;padding:0 10px}.roomtitle{font-size:14px}.roomsub{font-size:9px}
+.profilemini{display:none}.topbtn{padding:7px}.chatheading{padding:10px}.messages{padding:9px}.composer{padding:9px}.composer input{padding:11px;font-size:13px}.send{padding:0 14px}
 }
 </style>
 </head>
@@ -116,273 +81,180 @@ button{cursor:pointer}
 <div id="authScreen">
  <div class="authbox">
   <div class="authbrand"><div class="logo">TT</div><h1>TalkTime</h1><p>YOUR NEON COMMUNITY</p></div>
-  <div id="authTitle" style="font-weight:bold;margin-bottom:8px">Welcome Back</div>
-  <input id="email" type="email" placeholder="Email address" autocomplete="email">
-  <input id="password" type="password" placeholder="Password" autocomplete="current-password">
-  <input id="username" type="text" placeholder="Your username" style="display:none">
+  <div id="authTitle"><b>Welcome Back</b></div>
+  <input id="email" type="email" placeholder="Email address">
+  <input id="password" type="password" placeholder="Password">
+  <input id="username" placeholder="Choose username" style="display:none">
   <button id="authButton" onclick="authenticate()">LOGIN</button>
-  <div id="authError"></div>
+  <div id="error"></div>
   <div class="authswitch"><span id="switchText">New here?</span> <a onclick="toggleAuth()" id="switchLink">Create account</a></div>
  </div>
 </div>
-
 <div id="app" style="display:none">
  <aside class="panel sidebar">
   <div class="brand"><div class="logo">TT</div><div><div class="brandname">TALK<span>TIME</span></div><div class="tag">NEON COMMUNITY</div></div></div>
   <div class="navtitle">MAIN MENU</div>
   <nav class="nav">
-   <button class="active" onclick="showSection('Main Chat',this)"><span class="ico">▣</span>Main Chat</button>
-   <button onclick="showSection('Ranking',this)"><span class="ico">♛</span>Ranking</button>
-   <button onclick="showSection('News',this)"><span class="ico">◈</span>News</button>
-   <button onclick="showSection('Friends Wall',this)"><span class="ico">♡</span>Friends Wall</button>
-   <button onclick="showSection('Games',this)"><span class="ico">♟</span>Games</button>
-   <button onclick="showSection('Gifts',this)"><span class="ico">✧</span>Gifts</button>
-   <button onclick="showSection('Members',this)"><span class="ico">♧</span>Members</button>
-   <button onclick="showSection('Settings',this)"><span class="ico">⚙</span>Settings</button>
+   <button class="active"><span>▣</span>Main Chat</button>
+   <button onclick="notReady('Ranking')"><span>♛</span>Ranking</button>
+   <button onclick="notReady('News')"><span>◈</span>News</button>
+   <button onclick="notReady('Friends Wall')"><span>♡</span>Friends Wall</button>
+   <button onclick="notReady('Games')"><span>♟</span>Games</button>
+   <button onclick="notReady('Gifts')"><span>✧</span>Gifts</button>
+   <button onclick="notReady('Private Messages')"><span>✉</span>Private Messages</button>
   </nav>
-  <div class="sidebottom"><small>LOGGED IN AS</small><strong id="sideUsername">Member</strong><button id="logoutBtn" onclick="logout()">Logout</button></div>
+  <div class="sidebottom"><small>YOUR ACCOUNT</small><strong id="sideName">Member</strong><button id="logout" onclick="logout()">LOGOUT</button></div>
  </aside>
-
  <main class="panel center">
   <header class="topbar">
-   <div><div class="roomtitle" id="roomTitle">✦ Main Chat</div><div class="roomsub">Welcome to the TalkTime community</div></div>
-   <div class="topactions"><span class="profilemini" id="topUsername"></span><button class="topbtn" title="Members" onclick="toggleMembers()">♧</button><button class="topbtn" title="Logout" onclick="logout()">⇥</button></div>
+   <div><div class="roomtitle">✦ Main Chat</div><div class="roomsub">Welcome to the TalkTime community</div></div>
+   <div class="topactions"><span class="profilemini" id="topName"></span><button class="topbtn" onclick="logout()">⇥</button></div>
   </header>
-  <div class="chatheading"><h2 id="chatHeading">✦ Public Room</h2><span class="live">● LIVE CHAT</span></div>
-  <div class="messages" id="messages"><div class="systemmsg">Welcome to TalkTime. Say hello!</div></div>
-  <form class="composer" id="chatForm">
-   <input id="messageInput" maxlength="200" placeholder="Type your message..." autocomplete="off">
-   <button class="send" type="submit">SEND ➤</button>
-  </form>
-  <div id="sectionNotice"><h2 id="noticeTitle"></h2><p id="noticeText"></p></div>
+  <div class="chatheading"><h2>✦ Public Room</h2><span class="live">● LIVE CHAT</span></div>
+  <div id="stats"></div>
+  <div class="messages" id="messages"><div style="text-align:center;color:#a69cbe;font-size:12px">Welcome to TalkTime!</div></div>
+  <form class="composer" id="chatForm"><input id="messageInput" maxlength="200" placeholder="Type your message..." autocomplete="off"><button class="send">SEND ➤</button></form>
  </main>
-
- <aside class="panel right" id="membersPanel">
-  <div class="righthead"><h3>✧ Members Online</h3><p><span class="membercount" id="memberCount">0</span> registered members</p></div>
-  <div class="memberlist" id="memberList"><div class="empty">Loading members...</div></div>
+ <aside class="panel right">
+  <div class="righthead"><h3>✧ Members</h3><p><span class="membercount" id="memberCount">0</span> registered members</p></div>
+  <div class="memberlist" id="memberList">Loading members...</div>
  </aside>
 </div>
-
 <script>
-const firebaseConfig = {
- apiKey: "AIzaSyDNrlP_auYAjDU6C43THl3cOvVqmQR1kYM",
- authDomain: "talktime-70e88.firebaseapp.com",
- projectId: "talktime-70e88",
- storageBucket: "talktime-70e88.firebasestorage.app",
- messagingSenderId: "356630061165",
- appId: "1:356630061165:web:156f9afef56c58d1881f64",
- measurementId: "G-VS2EHB4KM7"
+const firebaseConfig={
+ apiKey:"AIzaSyDNrlP_auYAjDU6C43THl3cOvVqmQR1kYM",
+ authDomain:"talktime-70e88.firebaseapp.com",
+ projectId:"talktime-70e88",
+ storageBucket:"talktime-70e88.firebasestorage.app",
+ messagingSenderId:"356630061165",
+ appId:"1:356630061165:web:156f9afef56c58d1881f64",
+ measurementId:"G-VS2EHB4KM7"
 };
-const OWNER_UID = "RCRj1YJf0hSeZIPIzLgpJHQYHNR2";
+const OWNER_UID="RCRj1YJf0hSeZIPIzLgpJHQYHNR2";
 firebase.initializeApp(firebaseConfig);
-const auth = firebase.auth();
-const db = firebase.firestore();
-let currentUser = null;
-let currentProfile = null;
-let signupMode = false;
-let stopMessages = null;
-let stopUsers = null;
+const auth=firebase.auth(),db=firebase.firestore();
+let currentUser=null,currentProfile=null,signup=false,stopChat=null,stopMembers=null;
 
 function toggleAuth(){
- signupMode = !signupMode;
- document.getElementById("username").style.display = signupMode ? "block" : "none";
- document.getElementById("authTitle").textContent = signupMode ? "Create your account" : "Welcome Back";
- document.getElementById("authButton").textContent = signupMode ? "CREATE ACCOUNT" : "LOGIN";
- document.getElementById("switchText").textContent = signupMode ? "Already registered?" : "New here?";
- document.getElementById("switchLink").textContent = signupMode ? "Login" : "Create account";
- document.getElementById("authError").textContent = "";
+ signup=!signup;
+ document.getElementById("username").style.display=signup?"block":"none";
+ document.getElementById("authTitle").innerHTML=signup?"<b>Create account</b>":"<b>Welcome Back</b>";
+ document.getElementById("authButton").textContent=signup?"CREATE ACCOUNT":"LOGIN";
+ document.getElementById("switchText").textContent=signup?"Already registered?":"New here?";
+ document.getElementById("switchLink").textContent=signup?"Login":"Create account";
+ document.getElementById("error").textContent="";
+}
+function friendly(e){
+ const m={"auth/email-already-in-use":"Email already registered.","auth/invalid-email":"Invalid email.","auth/weak-password":"Password kam az kam 6 characters ka ho.","auth/user-not-found":"Account nahi mila.","auth/wrong-password":"Password ghalat hai.","auth/invalid-credential":"Email ya password ghalat hai.","auth/operation-not-allowed":"Firebase Authentication mein Email/Password enable karo."};
+ return m[e.code]||e.message||"Error";
 }
 async function authenticate(){
- const email = document.getElementById("email").value.trim();
- const password = document.getElementById("password").value;
- const username = document.getElementById("username").value.trim();
- const error = document.getElementById("authError");
- error.textContent = "";
+ const email=document.getElementById("email").value.trim();
+ const password=document.getElementById("password").value;
+ const username=document.getElementById("username").value.trim();
+ const error=document.getElementById("error");error.textContent="";
  try{
-  if(!email || !password) throw new Error("Email aur password enter karo.");
-  if(signupMode){
-   if(username.length < 3 || username.length > 20) throw new Error("Username 3 se 20 characters ka hona chahiye.");
-   const cred = await auth.createUserWithEmailAndPassword(email,password);
-   await db.collection("users").doc(cred.user.uid).set({
-    username: username, email: email, bio: "", photoURL: "", theme: "purple",
-    createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-    lastSeen: firebase.firestore.FieldValue.serverTimestamp()
-   });
-  }else{
-   await auth.signInWithEmailAndPassword(email,password);
-  }
- }catch(e){error.textContent = friendlyError(e);}
-}
-function friendlyError(e){
- const map = {
-  "auth/email-already-in-use":"This email is already registered.",
-  "auth/invalid-email":"Email address is not valid.",
-  "auth/weak-password":"Password kam az kam 6 characters ka hona chahiye.",
-  "auth/user-not-found":"Account nahi mila. Pehle signup karo.",
-  "auth/wrong-password":"Password ghalat hai.",
-  "auth/invalid-credential":"Email ya password ghalat hai.",
-  "auth/operation-not-allowed":"Firebase mein Email/Password login enable karo."
- };
- return map[e.code] || e.message || "Something went wrong.";
-}
-auth.onAuthStateChanged(async user=>{
- if(!user){
-  currentUser = null;
-  document.getElementById("authScreen").style.display = "grid";
-  document.getElementById("app").style.display = "none";
-  if(stopMessages) stopMessages();
-  if(stopUsers) stopUsers();
-  return;
- }
- currentUser = user;
- try{
-  const ref = db.collection("users").doc(user.uid);
-  let snap = await ref.get();
-  if(!snap.exists){
-   const fallback = (user.email || "Member").split("@")[0].slice(0,20);
-   await ref.set({
-    username:fallback,email:user.email || "",bio:"",photoURL:"",theme:"purple",
+  if(!email||!password)throw new Error("Email aur password enter karo.");
+  if(signup){
+   if(username.length<3||username.length>20)throw new Error("Username 3 se 20 characters ka hona chahiye.");
+   const c=await auth.createUserWithEmailAndPassword(email,password);
+   await db.collection("users").doc(c.user.uid).set({
+    username,email,bio:"",coins:0,ruby:0,level:1,rank:"Member",
     createdAt:firebase.firestore.FieldValue.serverTimestamp(),
     lastSeen:firebase.firestore.FieldValue.serverTimestamp()
    });
-   snap = await ref.get();
+  }else await auth.signInWithEmailAndPassword(email,password);
+ }catch(e){error.textContent=friendly(e);}
+}
+function esc(s){return String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
+function initial(s){return esc((s||"U").slice(0,1).toUpperCase());}
+auth.onAuthStateChanged(async user=>{
+ if(!user){
+  currentUser=null;
+  document.getElementById("authScreen").style.display="grid";
+  document.getElementById("app").style.display="none";
+  if(stopChat)stopChat();if(stopMembers)stopMembers();
+  return;
+ }
+ currentUser=user;
+ try{
+  const ref=db.collection("users").doc(user.uid);
+  let snap=await ref.get();
+  if(!snap.exists){
+   const fallback=(user.email||"Member").split("@")[0].slice(0,20);
+   await ref.set({username:fallback,email:user.email||"",bio:"",coins:0,ruby:0,level:1,rank:"Member",createdAt:firebase.firestore.FieldValue.serverTimestamp(),lastSeen:firebase.firestore.FieldValue.serverTimestamp()});
+   snap=await ref.get();
   }
-  currentProfile = snap.data();
+  if(user.uid===OWNER_UID){
+   await ref.set({coins:1000000,ruby:1000000,level:500,rank:"Owner"},{merge:true});
+   snap=await ref.get();
+  }
+  currentProfile=snap.data();
   await ref.update({lastSeen:firebase.firestore.FieldValue.serverTimestamp()});
-  document.getElementById("authScreen").style.display = "none";
-  document.getElementById("app").style.display = "grid";
-  const name = currentProfile.username || "Member";
-  document.getElementById("sideUsername").textContent = name + (user.uid === OWNER_UID ? " · OWNER" : "");
-  document.getElementById("topUsername").textContent = name;
-  startMessages();
-  startMembers();
+  document.getElementById("authScreen").style.display="none";
+  document.getElementById("app").style.display="grid";
+  document.getElementById("sideName").textContent=currentProfile.username+(user.uid===OWNER_UID?" · OWNER":"");
+  document.getElementById("topName").textContent=currentProfile.username;
+  showStats();startChat();startMembers();
  }catch(e){
-  document.getElementById("authError").textContent = "Profile load error: " + friendlyError(e);
-  document.getElementById("authScreen").style.display = "grid";
+  document.getElementById("error").textContent="Profile error: "+friendly(e);
+  document.getElementById("authScreen").style.display="grid";
  }
 });
-function escapeHTML(value){
- return String(value).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+function showStats(){
+ const p=currentProfile;
+ document.getElementById("stats").innerHTML=
+ '<span class="stat">RANK: <b>'+esc(p.rank||"Member")+'</b></span>'+
+ '<span class="stat">LEVEL: <b>'+Number(p.level||1)+'</b></span>'+
+ '<span class="stat">COINS: <b>'+Number(p.coins||0).toLocaleString()+'</b></span>'+
+ '<span class="stat">RUBY: <b>'+Number(p.ruby||0).toLocaleString()+'</b></span>';
 }
-function initials(name){return escapeHTML((name || "U").trim().slice(0,1).toUpperCase());}
-function startMessages(){
- if(stopMessages) stopMessages();
- stopMessages = db.collection("rooms").doc("main").collection("messages")
-  .orderBy("createdAt","asc").limit(100)
-  .onSnapshot(snapshot=>{
-   const box = document.getElementById("messages");
-   box.innerHTML = "";
-   if(snapshot.empty){box.innerHTML='<div class="systemmsg">No messages yet. Start the conversation!</div>';return;}
-   snapshot.forEach(doc=>{
-    const m = doc.data();
-    const isOwner = m.uid === OWNER_UID;
-    const time = m.createdAt && m.createdAt.toDate ? m.createdAt.toDate().toLocaleTimeString([], {hour:"2-digit",minute:"2-digit"}) : "";
-    const item = document.createElement("div");
-    item.className = "msg";
-    item.innerHTML = '<div class="avatar">'+initials(m.username)+'</div><div class="msgbody"><div class="msghead"><span class="msgname">'+escapeHTML(m.username || "Member")+'</span>'+(isOwner?'<span class="ownerbadge">OWNER</span>':'')+'<span class="msgtime">'+escapeHTML(time)+'</span></div><div class="msgtext">'+escapeHTML(m.text || "")+'</div></div>';
-    box.appendChild(item);
-   });
-   box.scrollTop = box.scrollHeight;
-  },err=>showSystemError(err));
-}
-function showSystemError(err){
- const box = document.getElementById("messages");
- box.innerHTML = '<div class="empty">Chat load nahi hui: '+escapeHTML(err.message)+'</div>';
+function startChat(){
+ if(stopChat)stopChat();
+ stopChat=db.collection("rooms").doc("main").collection("messages").orderBy("createdAt","asc").limit(100).onSnapshot(s=>{
+  const box=document.getElementById("messages");box.innerHTML="";
+  if(s.empty){box.innerHTML='<div style="text-align:center;color:#a69cbe;font-size:12px">No messages yet. Start chatting!</div>';return;}
+  s.forEach(d=>{
+   const m=d.data(),owner=m.uid===OWNER_UID;
+   const time=m.createdAt?.toDate?m.createdAt.toDate().toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"}):"";
+   const el=document.createElement("div");el.className="msg";
+   el.innerHTML='<div class="avatar">'+initial(m.username)+'</div><div class="msgbody"><div class="msghead"><span class="msgname">'+esc(m.username)+'</span>'+(owner?'<span class="rank">OWNER</span>':'')+'<span class="msgtime">'+esc(time)+'</span></div><div class="msgtext">'+esc(m.text)+'</div></div>';
+   box.appendChild(el);
+  });
+  box.scrollTop=box.scrollHeight;
+ },e=>{document.getElementById("messages").textContent="Chat error: "+e.message;});
 }
 document.getElementById("chatForm").addEventListener("submit",async e=>{
  e.preventDefault();
- const input = document.getElementById("messageInput");
- const text = input.value.trim();
- if(!text || !currentUser || !currentProfile) return;
- if(text.length > 200){alert("Message 200 characters se zyada nahi ho sakta.");return;}
- input.disabled = true;
+ const input=document.getElementById("messageInput"),value=input.value.trim();
+ if(!value||!currentUser||!currentProfile)return;
+ if(value.length>200)return alert("Maximum 200 characters.");
+ input.disabled=true;
  try{
   await db.collection("rooms").doc("main").collection("messages").add({
-   uid:currentUser.uid,
-   username:currentProfile.username || "Member",
-   text:text,
+   uid:currentUser.uid,username:currentProfile.username,text:value,
    createdAt:firebase.firestore.FieldValue.serverTimestamp()
   });
-  input.value = "";
- }catch(err){alert("Message send nahi hua: " + friendlyError(err));}
- input.disabled = false;
- input.focus();
+  input.value="";
+ }catch(err){alert("Message send nahi hua: "+friendly(err));}
+ input.disabled=false;input.focus();
 });
 function startMembers(){
- if(stopUsers) stopUsers();
- stopUsers = db.collection("users").onSnapshot(snapshot=>{
-  const list = document.getElementById("memberList");
-  const members = [];
-  snapshot.forEach(doc=>members.push({uid:doc.id,...doc.data()}));
-  members.sort((a,b)=>{
-   if(a.uid === OWNER_UID) return -1;
-   if(b.uid === OWNER_UID) return 1;
-   return (a.username || "").localeCompare(b.username || "");
-  });
-  document.getElementById("memberCount").textContent = members.length;
-  list.innerHTML = "";
-  if(!members.length){list.innerHTML='<div class="empty">No members yet</div>';return;}
+ if(stopMembers)stopMembers();
+ stopMembers=db.collection("users").onSnapshot(s=>{
+  const members=[];s.forEach(d=>members.push({uid:d.id,...d.data()}));
+  members.sort((a,b)=>a.uid===OWNER_UID?-1:b.uid===OWNER_UID?1:(a.username||"").localeCompare(b.username||""));
+  document.getElementById("memberCount").textContent=members.length;
+  const list=document.getElementById("memberList");list.innerHTML="";
   members.forEach(m=>{
-   const el = document.createElement("div");
-   el.className = "member";
-   el.innerHTML = '<div class="avatar">'+initials(m.username)+'</div><div class="memberinfo"><div class="membername">'+escapeHTML(m.username || "Member")+(m.uid===OWNER_UID?' <span class="ownerbadge">OWNER</span>':'')+'</div><div class="memberstatus">● Registered member</div></div>';
+   const el=document.createElement("div");el.className="member";
+   el.innerHTML='<div class="avatar">'+initial(m.username)+'</div><div class="memberinfo"><div class="membername">'+esc(m.username)+(m.uid===OWNER_UID?' <span class="rank">OWNER</span>':'')+'</div><div class="memberstatus">● Registered member</div></div>';
    list.appendChild(el);
   });
- },err=>{
-  document.getElementById("memberList").innerHTML='<div class="empty">Members load nahi ho sake: '+escapeHTML(err.message)+'</div>';
- });
+ },e=>{document.getElementById("memberList").textContent="Members error: "+e.message;});
 }
-function showSection(name,button){
- document.querySelectorAll(".nav button").forEach(b=>b.classList.remove("active"));
- if(button) button.classList.add("active");
- const notice = document.getElementById("sectionNotice");
- const title = document.getElementById("noticeTitle");
- const text = document.getElementById("noticeText");
- const composer = document.getElementById("chatForm");
- const messages = document.getElementById("messages");
- const heading = document.getElementById("chatHeading");
- if(name === "Main Chat"){
-  notice.style.display = "none";
-  composer.style.display = "flex";
-  messages.style.display = "flex";
-  heading.textContent = "✦ Public Room";
-  document.getElementById("roomTitle").textContent = "✦ Main Chat";
-  return;
- }
- composer.style.display = "none";
- messages.style.display = "none";
- notice.style.display = "block";
- title.textContent = name;
- const descriptions = {
-  "Ranking":"Member ranking and levels will appear here when ranking features are added.",
-  "News":"Community news will appear here.",
-  "Friends Wall":"Your friends' posts will appear here.",
-  "Games":"Games section is coming soon.",
-  "Gifts":"Gift section is coming soon.",
-  "Members":"All registered TalkTime members are listed in the panel on the right.",
-  "Settings":"Account settings and profile options will be added here."
- };
- text.textContent = descriptions[name] || "This section is not available yet.";
- document.getElementById("roomTitle").textContent = "✦ " + name;
-}
-function toggleMembers(){
- const panel = document.getElementById("membersPanel");
- if(window.innerWidth <= 900){
-  const visible = panel.style.display === "flex";
-  panel.style.display = visible ? "none" : "flex";
-  if(!visible){
-   panel.style.position = "fixed";
-   panel.style.zIndex = "10";
-   panel.style.top = "70px";
-   panel.style.right = "8px";
-   panel.style.bottom = "8px";
-   panel.style.width = "250px";
-  }
- }
-}
-async function logout(){
- try{await auth.signOut();}catch(e){alert(friendlyError(e));}
-}
+function notReady(section){alert(section+" ka feature abhi is version mein available nahi hai.");}
+async function logout(){await auth.signOut();}
 </script>
 </body>
 </html>
